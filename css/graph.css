@@ -1,0 +1,30 @@
+.ctrl-point {
+	position: absolute;
+	width: 15px;
+	height: 15px;
+	border-radius: 5px;
+	z-index: 9;
+	background-color: #f1f1f1;
+	border: 1px solid #d3d3d3;
+	text-align: center;
+	cursor: move;
+}
+
+.pt-a {
+	background-color: #facb5f;
+}
+.pt-b {
+	background-color: #e3a820;
+}
+.pt-c {
+	background-color: #77bfc7;
+}
+.pt-d {
+	background-color: #48a1ab;
+}
+.pt-e {
+	background-color: #9f59c2;
+}
+.pt-f {
+	background-color: #763f91;
+}

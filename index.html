@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Factorio Spline Editor</title>
+		<meta property="og:type" content="website">
+		<meta property="og:image" content="https://factorio.com/static/img/factorio-wheel.png">
+		<meta property="og:site_name" content="Factorio Spline Editor">
+		<meta property="og:description" content="">
+		
+		<link href="https://cdn.factorio.com/assets/fonts/titillium-web.css" rel="stylesheet">
+		<link href="https://cdn.factorio.com/assets/vendor/fontawesome/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+		
+		<link href="img/favicon.ico" rel="icon" type="image/x-icon"/>
+		<link href="img/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+		<link href="css/graph.css" rel="stylesheet" type="text/css"/>
+		<link href="css/main.css" rel="stylesheet" type="text/css"/>
+		<meta name="viewport" content="width=device-width">
+		
+	    <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script-->
+	    <script src="js/jquery.min.js"></script>
+		<script src="js/graph.js"></script> 
+	</head>
+	<body>
+		<div class="container">
+			<div class="container-inner">
+				<div class="panel blog-post">
+					<div class="flex-space-between">
+						<h2>Factorio Spline Editor</h2>
+					</div>
+					<div class="panel-inset mb0 mt0">
+						Maintained by <a class="yellow" href="https://factorio.com/blog/author/hrusa">Hrusa</a>. Latest update: 2024-06-24
+					</div>
+					<div class="panel-inset-lighter mt0">
+						<p>
+							This tool lets you design prototype bezier splines used in surface transitions.
+						</p>
+						<hr>
+						<div>
+							<canvas id="graph" height="800" width="800" class="graph"></canvas>
+							<div id="pointA" class="ctrl-point pt-a"></div>
+							<div id="pointB" class="ctrl-point pt-b"></div>
+							<div id="pointC" class="ctrl-point pt-c"></div>
+							<div id="pointD" class="ctrl-point pt-d"></div>
+							<div id="pointE" class="ctrl-point pt-e"></div>
+							<div id="pointF" class="ctrl-point pt-f"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
