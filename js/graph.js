@@ -1,27 +1,42 @@
+
+var points = [];
+var pointHandles = [];
+var tangentHandles = [];
+var point_colors = [ "#facb5f","#77bfc7","#9f59c2","#599f52" ];
+
 $( document ).ready(function() {
 	let graph = $("#graph").get(0);
 	const ctx = graph.getContext("2d");
-	
-	$("#pointA").css({top: $("#graph").offset().top + 300, left: $("#graph").offset().left + 100, position:'absolute'});
-	$("#pointB").css({top: $("#graph").offset().top + 200, left: $("#graph").offset().left + 200, position:'absolute'});
-	$("#pointC").css({top: $("#graph").offset().top + 200, left: $("#graph").offset().left + 400, position:'absolute'});
-	$("#pointD").css({top: $("#graph").offset().top + 300, left: $("#graph").offset().left + 500, position:'absolute'});
-	$("#pointE").css({top: $("#graph").offset().top + 700, left: $("#graph").offset().left + 600, position:'absolute'});
-	$("#pointF").css({top: $("#graph").offset().top + 720, left: $("#graph").offset().left + 720, position:'absolute'});
-	
-	// Make the DIV element draggable:
-	dragElement($("#pointA"), $("#pointB"));
-	dragElement($("#pointC"), $("#pointD"));
-	dragElement($("#pointE"), $("#pointF"));
-	
+
+  for (var i = 0; i < 8; ++i)
+    addPoint();
+  console.log(points);
+
 	paintGrid(ctx);
 });
 
+function addPoint()
+{
+  var pointHandle = $( '<div class="ctrl-point"></div>' ).first();
+  var tangentHandle = $( '<div class="ctrl-point"></div>' ).first();
+  $("#graph-area").append( pointHandle );
+  $("#graph-area").append( tangentHandle );
+	dragElement(pointHandle, tangentHandle);
+  var entry = { point: { x: 0, y: 0, z: 0, w: 0 },
+                tangent: { x: 1, y: 1, z: 1, w: 1 },
+                point_handle: pointHandle,
+                tangent_handle: tangentHandle }
+  points.push(entry);
+	pointHandle.css({top: pointHandle.offset().top - 400, left: pointHandle.offset().left + 200 + points.length * 50, position:'absolute'});
+	tangentHandle.css({top: tangentHandle.offset().top - 450, left: tangentHandle.offset().left + 250 + points.length * 50, position:'absolute'});
+  return entry;
+}
+
 function getPosX(jqele) { return jqele.offset().left - $("#graph").offset().left + jqele.width()/2; }
 function getPosY(jqele) { return jqele.offset().top - $("#graph").offset().top + jqele.height()/2; }
-function getPoint(name) {
-	var x = getPosX($(name));
-	var y = getPosY($(name));
+function getPoint(jqele) {
+	var x = getPosX(jqele);
+	var y = getPosY(jqele);
 	return {x, y};
 }
 
@@ -51,7 +66,7 @@ function paintBezier(ctx,A,B,C,D)
 		var post = bezier(A,B,C,D,x);
 		ctx.moveTo(prev.x, prev.y);
 		ctx.lineTo(post.x, post.y);
-		console.log(prev.x + "" + prev.y + " to " + post.x + "," + post.y);
+		//console.log(prev.x + "" + prev.y + " to " + post.x + "," + post.y);
 		if (last)
 			break;
 	}
@@ -74,7 +89,7 @@ function paintGrid(ctx)
 {
 	ctx.fillStyle = "black";
 	ctx.fillRect(0, 0, 800, 800);
-	
+
 	ctx.beginPath();
 	ctx.lineWidth = 1;
 	for (let x = 0; x <= 10; x += 1)
@@ -86,15 +101,14 @@ function paintGrid(ctx)
 	}
     ctx.strokeStyle = "white";
     ctx.stroke();
-	
+
 	// bezier curve
-	paintBezier(ctx, getPoint("#pointA"),getPoint("#pointB"),getPoint("#pointC"),getPoint("#pointD"));
-	paintBezier(ctx, getPoint("#pointC"),getPoint("#pointD"),getPoint("#pointE"),getPoint("#pointF"));
-	
+  for (var i = 1; i < points.length; ++i)
+    paintBezier(ctx, getPoint(points.at(i-1).point_handle), getPoint(points.at(i-1).tangent_handle), getPoint(points.at(i).point_handle), getPoint(points.at(i).tangent_handle));
+
 	// control points
-	paintControl(ctx, getPoint("#pointA"), getPoint("#pointB"), "#facb5f");
-	paintControl(ctx, getPoint("#pointC"), getPoint("#pointD"), "#77bfc7");
-	paintControl(ctx, getPoint("#pointE"), getPoint("#pointF"), "#9f59c2");
+  for (var i = 0; i < points.length; ++i)
+    paintControl(ctx, getPoint(points.at(i).point_handle), getPoint(points.at(i).tangent_handle), point_colors[i % point_colors.length]);
 }
 
 function dragElement(elmntM, elmnt) {
@@ -117,7 +131,7 @@ function dragElement(elmntM, elmnt) {
     document.onmouseup = closeDragElement;
     document.onmousemove = elementDrag;
   }
-  
+
    function dragMouseDownM(e) {
     e = e || window.event;
     e.preventDefault();
@@ -137,12 +151,12 @@ function dragElement(elmntM, elmnt) {
     pos3 = e.clientX;
     pos4 = e.clientY;
 	elmnt.css({top: elmnt.offset().top - pos2, left: elmnt.offset().left - pos1, position:'absolute'});
-	
+
 	let graph = $("#graph").get(0);
 	const ctx = graph.getContext("2d");
 	paintGrid(ctx);
   }
-  
+
   function elementDragM(e) {
     e = e || window.event;
     e.preventDefault();
@@ -153,7 +167,7 @@ function dragElement(elmntM, elmnt) {
     pos4 = e.clientY;
 	elmnt.css({top: elmnt.offset().top - pos2, left: elmnt.offset().left - pos1, position:'absolute'});
 	elmntM.css({top: elmntM.offset().top - pos2, left: elmntM.offset().left - pos1, position:'absolute'});
-	
+
 	let graph = $("#graph").get(0);
 	const ctx = graph.getContext("2d");
 	paintGrid(ctx);

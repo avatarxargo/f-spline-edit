@@ -10,21 +10,11 @@
 	cursor: move;
 }
 
-.pt-a {
-	background-color: #facb5f;
-}
-.pt-b {
-	background-color: #e3a820;
-}
-.pt-c {
-	background-color: #77bfc7;
-}
-.pt-d {
-	background-color: #48a1ab;
-}
-.pt-e {
-	background-color: #9f59c2;
-}
-.pt-f {
-	background-color: #763f91;
-}
+div.ctrl-point:nth-of-type(8n + 1) {	background-color: #facb5f }
+div.ctrl-point:nth-of-type(8n + 2) {	background-color: #e3a820 }
+div.ctrl-point:nth-of-type(8n + 3) {	background-color: #77bfc7 }
+div.ctrl-point:nth-of-type(8n + 4) {	background-color: #48a1ab }
+div.ctrl-point:nth-of-type(8n + 5) {	background-color: #9f59c2 }
+div.ctrl-point:nth-of-type(8n + 6) {	background-color: #763f91 }
+div.ctrl-point:nth-of-type(8n + 7) {	background-color: #599f52 }
+div.ctrl-point:nth-of-type(8n + 8) {	background-color: #3f7651 }
