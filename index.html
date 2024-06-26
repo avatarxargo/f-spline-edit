@@ -35,9 +35,19 @@
 							This tool lets you design prototype bezier splines used in surface transitions.
 						</p>
 						<hr>
-						<div id="graph-area">
-							<canvas id="graph" height="800" width="800" class="graph"></canvas>
-						</div>
+            <div>
+              <div id="graph-area" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top;">
+                <canvas id="graph" height="800" width="800" class="graph"></canvas>
+              </div>
+              <div id="right-column">
+                <div id="field-area" class="panel-inset-lighter">
+                </div>
+                <div id="control-area" style="justify-content: flex-end; flex-wrap: wrap; text-align: center;">
+                  <a id="button-add" class="button flex flex-space-between"><div>Add Point</div></a>
+                  <!--a id="button-export" class="button flex flex-space-between" style="display: inline-block;"><div>Export</div></a-->
+                </div>
+              </div>
+            </div>
 					</div>
 				</div>
 			</div>

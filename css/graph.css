@@ -1,13 +1,41 @@
 .ctrl-point {
 	position: absolute;
-	width: 15px;
-	height: 15px;
+	width: 14px;
+	height: 14px;
 	border-radius: 5px;
 	z-index: 9;
 	background-color: #f1f1f1;
 	border: 1px solid #d3d3d3;
 	text-align: center;
 	cursor: move;
+}
+#right-column
+{
+  display: inline-block;
+  *display: inline; 
+  zoom: 1;
+  vertical-align: top;
+  float: right;
+}
+
+#field-area {
+  margin-top: 0;
+  overflow-y: scroll;
+  height: 750px;
+}
+
+div.narrow-field {
+  text-align: right;
+}
+
+div.narrow-field p {
+  margin-top: 0.2em;
+}
+
+div.narrow-field input {
+  width: 80px;
+  height: 1.5em;
+  font-size: 0.9em;
 }
 
 div.ctrl-point:nth-of-type(8n + 1) {	background-color: #facb5f }
@@ -18,3 +46,8 @@ div.ctrl-point:nth-of-type(8n + 5) {	background-color: #9f59c2 }
 div.ctrl-point:nth-of-type(8n + 6) {	background-color: #763f91 }
 div.ctrl-point:nth-of-type(8n + 7) {	background-color: #599f52 }
 div.ctrl-point:nth-of-type(8n + 8) {	background-color: #3f7651 }
+
+div.narrow-field:nth-of-type(4n + 1) {	background-color: #543e0a }
+div.narrow-field:nth-of-type(4n + 2) {	background-color: #054046 }
+div.narrow-field:nth-of-type(4n + 3) {	background-color: #2f143c }
+div.narrow-field:nth-of-type(4n + 4) {	background-color: #0c2715 }
