@@ -36,6 +36,33 @@
 						</p>
 						<hr>
             <div>
+              <div class="panel">
+                <label>Dimension:</label> <select class="panel-inset-lighter" style="color: white" name="dimension" id="dimension">
+                  <option value="1D" disabled>Scalar (1D)</option>
+                  <option value="2D">Vector (2D)</option>
+                  <option value="4D" disabled>Color (4D)</option>
+                </select>
+                <div id="x-dimensions">
+                  <b>X:</b>
+                  <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
+                  <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div id="y-dimensions">
+                  <b>Y:</b>
+                  <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
+                  <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <!--div id="z-dimensions">
+                  <b>Z:</b>
+                  <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
+                  <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div id="w-dimensions">
+                  <b>W:</b>
+                  <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
+                  <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                </div-->
+              </div>
               <div id="graph-area" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top;">
                 <canvas id="graph" height="800" width="800" class="graph"></canvas>
               </div>

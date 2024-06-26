@@ -1,7 +1,5 @@
 
 var points = [];
-var pointHandles = [];
-var tangentHandles = [];
 var point_colors = [ "#facb5f","#77bfc7","#9f59c2","#599f52" ];
 var graph;
 var graphDOM;
@@ -25,7 +23,13 @@ $( document ).ready(function() {
     addPoint();
   console.log(points);
 
+  $( window ).on( "resize", function() { points.forEach(refreshPointHandle); paintGraph(); } );
+  $( "#x-dimensions input" ).on('input', function(){ resizeDataArea(); paintGraph(); });
+  $( "#y-dimensions input" ).on('input', function(){ resizeDataArea(); paintGraph(); });
+
   $("#button-add").click( function() { addPoint(); paintGraph(); });
+
+  resizeDataArea();
 	paintGraph();
 });
 
@@ -62,6 +66,15 @@ function addPoint()
 	tangentHandle.css({top: tangentHandle.offset().top - 450, left: tangentHandle.offset().left + 250 + points.length * 50, position:'absolute'});
   refreshPointEntry(entry);
   return entry;
+}
+
+function resizeDataArea()
+{
+  dataArea.x.min = parseFloat($( "#x-dimensions input" ).eq(0).val());
+  dataArea.x.max = parseFloat($( "#x-dimensions input" ).eq(1).val());
+  dataArea.y.min = parseFloat($( "#y-dimensions input" ).eq(0).val());
+  dataArea.y.max = parseFloat($( "#y-dimensions input" ).eq(1).val());
+  points.forEach(refreshPointHandle);
 }
 
 function refreshPointEntry(entry)
@@ -178,22 +191,34 @@ function paintGrid(ctx)
 
 	ctx.beginPath();
 	ctx.lineWidth = 1;
-	for (let x = 0; x <= 10; x += 1)
+	for (var x = dataArea.x.min; x <= dataArea.x.max; x += 1)
 	{
-		ctx.moveTo(x * 80, 0);
-		ctx.lineTo(x * 80, 800);
-		ctx.moveTo(0, x * 80);
-		ctx.lineTo(800, x * 80);
+    var dataPointA = dataToDisplay({ x: x, y: dataArea.y.min });
+    var dataPointB = dataToDisplay({ x: x, y: dataArea.y.max });
+		ctx.moveTo(dataPointA.x, dataPointA.y);
+		ctx.lineTo(dataPointB.x, dataPointB.y);
+	}
+	for (var y = dataArea.y.min; y <= dataArea.y.max; y += 1)
+	{
+    var dataPointA = dataToDisplay({ x: dataArea.x.min, y: y });
+    var dataPointB = dataToDisplay({ x: dataArea.x.max, y: y });
+		ctx.moveTo(dataPointA.x, dataPointA.y);
+		ctx.lineTo(dataPointB.x, dataPointB.y);
 	}
   ctx.strokeStyle = "white";
   ctx.stroke();
 
 	ctx.beginPath();
 	ctx.lineWidth = 2;
-  ctx.moveTo(400, 0);
-  ctx.lineTo(400, 800);
-  ctx.moveTo(0, 400);
-  ctx.lineTo(800, 400); 
+  var dataPointA = dataToDisplay({ x: dataArea.x.min, y: 0 });
+  var dataPointB = dataToDisplay({ x: dataArea.x.max, y: 0 });
+  ctx.moveTo(dataPointA.x, dataPointA.y);
+  ctx.lineTo(dataPointB.x, dataPointB.y);
+  var dataPointA = dataToDisplay({ x: 0, y: dataArea.y.min });
+  var dataPointB = dataToDisplay({ x: 0, y: dataArea.y.max });
+  ctx.moveTo(dataPointA.x, dataPointA.y);
+  ctx.lineTo(dataPointB.x, dataPointB.y);
+  ctx.strokeStyle = "yellow";
   ctx.stroke();
 }
 
