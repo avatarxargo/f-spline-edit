@@ -35,13 +35,14 @@ $( document ).ready(function() {
 
 function addPointControl()
 {
-  var newPanel = $( '<div class="panel narrow-field"> <p>point <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p> <p>tangent <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p></div>');
+  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button">X</a> point <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p> <p>tangent <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p></div>');
   var pointx = newPanel.find( "input" ).eq(0);
   var pointy = newPanel.find( "input" ).eq(1);
   var tangentx = newPanel.find( "input" ).eq(2);
   var tangenty = newPanel.find( "input" ).eq(3);
+  var removeButton = newPanel.find( "a" ).eq(0);
   fieldArea.append(newPanel);
-  return { point: { x: pointx, y: pointy }, tangent: { x: tangentx, y: tangenty } };
+  return { panel: newPanel, remove: removeButton, point: { x: pointx, y: pointy }, tangent: { x: tangentx, y: tangenty } };
 }
 
 function addPoint()
@@ -51,7 +52,8 @@ function addPoint()
   $("#graph-area").append( pointHandle );
   $("#graph-area").append( tangentHandle );
   var controls = addPointControl();
-  var entry = { point: { x: 0, y: 0, z: 0, w: 0 },
+  var entry = { index: points.length,
+                point: { x: 0, y: 0, z: 0, w: 0 },
                 tangent: { x: 1, y: 1, z: 1, w: 1 },
                 point_handle: pointHandle,
                 tangent_handle: tangentHandle,
@@ -62,10 +64,23 @@ function addPoint()
   controls.point.y.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.tangent.x.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.tangent.y.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
+  controls.remove.click(function() { removePoint(entry.index); paintGraph(); });
 	pointHandle.css({top: pointHandle.offset().top - 400, left: pointHandle.offset().left + 200 + points.length * 50, position:'absolute'});
 	tangentHandle.css({top: tangentHandle.offset().top - 450, left: tangentHandle.offset().left + 250 + points.length * 50, position:'absolute'});
   refreshPointEntry(entry);
   return entry;
+}
+
+function removePoint(index)
+{
+  if (index > points.length)
+    return;
+  points[index].controls.panel.remove();
+  points[index].point_handle.remove();
+  points[index].tangent_handle.remove();
+  points.splice(index, 1);
+  for (var i = 0; i < points.length; ++i)
+    points[i].index = i;
 }
 
 function resizeDataArea()

@@ -38,6 +38,23 @@ div.narrow-field input {
   font-size: 0.9em;
 }
 
+a.micro-button {
+  display: inline;
+  height: 10px; 
+  font-size: 0.7em; 
+  padding: 2px; 
+  padding-left: 5px; 
+  padding-right: 5px; 
+  margin: 0;
+  background-color: #a84e4e;
+}
+
+a.micro-button:active {
+  padding: 2px; 
+  padding-left: 5px; 
+  padding-right: 5px; 
+}
+
 div.ctrl-point:nth-of-type(8n + 1) {	background-color: #facb5f }
 div.ctrl-point:nth-of-type(8n + 2) {	background-color: #e3a820 }
 div.ctrl-point:nth-of-type(8n + 3) {	background-color: #77bfc7 }
