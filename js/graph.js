@@ -28,6 +28,8 @@ $( document ).ready(function() {
   $( "#y-dimensions input" ).on('input', function(){ resizeDataArea(); paintGraph(); });
 
   $("#button-add").click( function() { addPoint(); paintGraph(); });
+  $("#import").click( function() { importString(); paintGraph(); });
+  $("#export").click( function() { exportString(); });
 
   resizeDataArea();
 	paintGraph();
@@ -53,8 +55,8 @@ function addPoint()
   $("#graph-area").append( tangentHandle );
   var controls = addPointControl();
   var entry = { index: points.length,
-                point: { x: 0, y: 0, z: 0, w: 0 },
-                tangent: { x: 1, y: 1, z: 1, w: 1 },
+                point: { x: points.length, y: 0, z: 0, w: 0 },
+                tangent: { x: 1, y: -1, z: 1, w: 1 },
                 point_handle: pointHandle,
                 tangent_handle: tangentHandle,
                 controls: controls }
@@ -65,9 +67,13 @@ function addPoint()
   controls.tangent.x.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.tangent.y.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.remove.click(function() { removePoint(entry.index); paintGraph(); });
-	pointHandle.css({top: pointHandle.offset().top - 400, left: pointHandle.offset().left + 200 + points.length * 50, position:'absolute'});
-	tangentHandle.css({top: tangentHandle.offset().top - 450, left: tangentHandle.offset().left + 250 + points.length * 50, position:'absolute'});
-  refreshPointEntry(entry);
+
+  controls.point.x.val(entry.point.x);
+  controls.point.y.val(entry.point.y);
+  controls.tangent.x.val(entry.tangent.x);
+  controls.tangent.y.val(entry.tangent.y);
+
+  refreshPointEntry(entry, true)
   return entry;
 }
 
@@ -83,6 +89,12 @@ function removePoint(index)
     points[i].index = i;
 }
 
+function clearPoints()
+{
+  for (var i = points.length; i > 0; --i)
+    removePoint(0);
+}
+
 function resizeDataArea()
 {
   dataArea.x.min = parseFloat($( "#x-dimensions input" ).eq(0).val());
@@ -92,31 +104,38 @@ function resizeDataArea()
   points.forEach(refreshPointHandle);
 }
 
-function refreshPointEntry(entry)
+function refreshPointEntry(entry, dataOnly = false)
 {
-  var point = { x: entry.point_handle.offset().left + entry.point_handle.width()/2 - graph.offset().left,
-                y: entry.point_handle.offset().top + entry.point_handle.height()/2 - graph.offset().top };
-  var tangent = { x: entry.tangent_handle.offset().left + entry.tangent_handle.width()/2 - graph.offset().left,
-                  y: entry.tangent_handle.offset().top + entry.tangent_handle.height()/2 - graph.offset().top };
+  if (!dataOnly)
+  {
+    var point = { x: entry.point_handle.offset().left + entry.point_handle.width()/2 - graph.offset().left,
+                  y: entry.point_handle.offset().top + entry.point_handle.height()/2 - graph.offset().top };
+    var tangent = { x: entry.tangent_handle.offset().left + entry.tangent_handle.width()/2 - graph.offset().left,
+                    y: entry.tangent_handle.offset().top + entry.tangent_handle.height()/2 - graph.offset().top };
 
-  point = displayToData(point);
-  tangent = displayToData(tangent);
+    entry.point = displayToData(point);
+    entry.tangent = displayToData(tangent);
 
-  entry.controls.point.x.val( roundDecimals(point.x, 2) );
-  entry.controls.point.y.val( roundDecimals(point.y, 2) );
-  entry.controls.tangent.x.val( roundDecimals(tangent.x, 2) );
-  entry.controls.tangent.y.val( roundDecimals(tangent.y, 2) );
+    entry.tangent.x = entry.tangent.x - entry.point.x;
+    entry.tangent.y = entry.tangent.y - entry.point.y;
+  }
+
+  entry.controls.point.x.val( roundDecimals(entry.point.x, 2) );
+  entry.controls.point.y.val( roundDecimals(entry.point.y, 2) );
+  entry.controls.tangent.x.val( roundDecimals(entry.tangent.x, 2) );
+  entry.controls.tangent.y.val( roundDecimals(entry.tangent.y, 2) );
   refreshPointHandle(entry); // propagate rounding back to the handle
 }
 
 function refreshPointHandle(entry)
 {
-  var point = { x: entry.controls.point.x.val(),
-                y: entry.controls.point.y.val() };
-  var tangent = { x: entry.controls.tangent.x.val(),
-                  y: entry.controls.tangent.y.val() };
+  entry.point = { x: parseFloat(entry.controls.point.x.val()),
+                  y: parseFloat(entry.controls.point.y.val()) };
+  entry.tangent = { x: parseFloat(entry.controls.tangent.x.val()),
+                    y: parseFloat(entry.controls.tangent.y.val()) };
 
-  point = dataToDisplay(point);
+  var tangent = { x: entry.point.x + entry.tangent.x, y: entry.point.y + entry.tangent.y };
+  var point = dataToDisplay(entry.point);
   tangent = dataToDisplay(tangent);
 
   entry.point_handle.css({left: graph.offset().left - entry.point_handle.width()/2 + point.x,
@@ -154,13 +173,33 @@ function getPoint(jqele) {
 	return {x, y};
 }
 
+function exportString()
+{
+  var string = "";
+  for (var i = 0; i < points.length; ++i)
+    string += "{ x=" + points[i].point.x + ", y=" + points[i].point.y + ", tx=" + points[i].tangent.x + ", ty=" + points[i].tangent.y + "}\n";
+  $("#iostring").val(string);
+}
+
+function importString()
+{
+  clearPoints();
+
+  if (points.length == 0)
+    addPoint();
+}
+
 function bezier( A, B, C, D, t )
 {
 	var mt = 1 - t;
 	//var x = A.x * mt * mt + (C.x + 2 * (C.x - D.x)) * 2 * mt * t + C.x * t * t;
 	//var y = A.y * mt * mt + (C.y + 2 * (C.y - D.y)) * 2 * mt * t + C.y * t * t;
-	var x = A.x * mt * mt * mt + B.x * 3 * mt * mt * t + (C.x + 2 * (C.x - D.x)) * 3 * mt * t * t + C.x * t * t * t;
-	var y = A.y * mt * mt * mt + B.y * 3 * mt * mt * t + (C.y + 2 * (C.y - D.y)) * 3 * mt * t * t + C.y * t * t * t;
+  var projB = { x: A.x + B.x ,
+                y: A.y + B.y  };
+  var projD = { x: C.x - D.x,
+                y: C.y - D.y };
+	var x = A.x * mt * mt * mt + projB.x * 3 * mt * mt * t + projD.x * 3 * mt * t * t + C.x * t * t * t;
+	var y = A.y * mt * mt * mt + projB.y * 3 * mt * mt * t + projD.y * 3 * mt * t * t + C.y * t * t * t;
 	return {x, y};
 }
 
@@ -178,6 +217,8 @@ function paintBezier(ctx,A,B,C,D)
 		}
 		var prev = bezier(A,B,C,D,x - delta);
 		var post = bezier(A,B,C,D,x);
+    prev = dataToDisplay(prev);
+    post = dataToDisplay(post);
 		ctx.moveTo(prev.x, prev.y);
 		ctx.lineTo(post.x, post.y);
 		//console.log(prev.x + "" + prev.y + " to " + post.x + "," + post.y);
@@ -193,10 +234,13 @@ function paintControl(ctx,A,B,color)
 {
 	ctx.beginPath();
 	ctx.lineWidth = 3;
-	ctx.moveTo(A.x - (B.x - A.x), A.y - (B.y - A.y));
-	ctx.lineTo(B.x, B.y);
-    ctx.strokeStyle = color;
-    ctx.stroke();
+  var ptA = dataToDisplay({ x: (A.x - B.x), y: (A.y - B.y) });
+  var ptB = dataToDisplay({ x: (A.x + B.x), y: (A.y + B.y) });
+	ctx.moveTo(ptA.x, ptA.y);
+	ctx.lineTo(ptB.x, ptB.y);
+  ctx.strokeStyle = color;
+
+  ctx.stroke();
 }
 
 function paintGrid(ctx)
@@ -242,9 +286,9 @@ function paintGraph()
 	const ctx = graphDOM.getContext("2d");
   paintGrid(ctx);
   for (var i = 1; i < points.length; ++i)
-    paintBezier(ctx, getPoint(points.at(i-1).point_handle), getPoint(points.at(i-1).tangent_handle), getPoint(points.at(i).point_handle), getPoint(points.at(i).tangent_handle));
+    paintBezier(ctx, points.at(i-1).point, points.at(i-1).tangent, points.at(i).point, points.at(i).tangent);
   for (var i = 0; i < points.length; ++i)
-    paintControl(ctx, getPoint(points.at(i).point_handle), getPoint(points.at(i).tangent_handle), point_colors[i % point_colors.length]);
+    paintControl(ctx, points.at(i).point, points.at(i).tangent, point_colors[i % point_colors.length]);
 }
 
 function dragElement(entry) {
