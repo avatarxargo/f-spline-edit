@@ -175,15 +175,37 @@ function getPoint(jqele) {
 
 function exportString()
 {
-  var string = "";
+  var string = '[\n';
   for (var i = 0; i < points.length; ++i)
-    string += "{ x=" + points[i].point.x + ", y=" + points[i].point.y + ", tx=" + points[i].tangent.x + ", ty=" + points[i].tangent.y + "}\n";
+  {
+    string += '  { "value": { "x":' + points[i].point.x + ', "y":' + points[i].point.y + ' }, "tangent" : { "x":' + points[i].tangent.x + ', "y":' + points[i].tangent.y + ' }}';
+    if (i+1 < points.length)
+      string += ',\n';
+    else
+      string += '\n';
+  }
+  string+=']';
   $("#iostring").val(string);
 }
 
 function importString()
 {
   clearPoints();
+
+  var string = $("#iostring").val();
+  var inputTree = jQuery.parseJSON(string);
+  for (var i = 0; i < inputTree.length; i++) {
+    addPoint();
+    var newie = points[points.length - 1];
+    newie.point.x = parseFloat(inputTree[i].value.x);
+    newie.point.y = parseFloat(inputTree[i].value.y);
+    newie.tangent.x = parseFloat(inputTree[i].tangent.x);
+    newie.tangent.y = parseFloat(inputTree[i].tangent.y);
+    refreshPointEntry(newie, true);
+  }
+  // }
+  // for (var i = 0; i < inputTree.length; ++i)
+  //   console.log(inputTree[i].value.x);
 
   if (points.length == 0)
     addPoint();
