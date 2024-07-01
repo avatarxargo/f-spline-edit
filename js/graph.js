@@ -208,12 +208,44 @@ function togglePlayback(tgt)
   }
 }
 
+function moveSimulation(point)
+{
+  point = dataToDisplay(point);
+  simulationPoint.css({left: graph.offset().left - simulationPoint.width()/2 + point.x,
+                      top: graph.offset().top - simulationPoint.height()/2 + point.y,
+                      position:'absolute'});
+}
+
 function updatePlayback()
 {
+  if (points.length < 2)
+    return;
   simulationT += 1;
-  simulationPoint.css({left: graph.offset().left - simulationPoint.width()/2 + 400 + 50 * Math.sin(simulationT / 36.0),
-                      top: graph.offset().top - simulationPoint.height()/2 + 400 + 50 * Math.cos(simulationT / 36.0),
-                      position:'absolute'});
+
+  var point;
+  if (simulationT <= points.at(0).timestamp)
+  {
+    moveSimulation(points.at(0).point);
+    $("#time-text").val(simulationT);
+    return;
+  }
+  if (simulationT >= points.at(points.length - 1).timestamp)
+  {
+    moveSimulation(points.at(points.length - 1).point);
+    simulationT = points.at(0).timestamp; // reset loop
+    $("#time-text").val(simulationT);
+    return;
+  }
+    
+  var i = 1;
+  while (simulationT > points.at(i).timestamp && (i+1) < points.length)
+    ++i;
+  var t = points.at(i).timestamp != points.at(i-1).timestamp ? (simulationT - points.at(i-1).timestamp) / (points.at(i).timestamp - points.at(i-1).timestamp) : 0;
+  var point = bezier(points.at(i-1).point, points.at(i-1).tangent, points.at(i).point, points.at(i).tangent, t);
+  moveSimulation(point);
+  $("#time-text").val(simulationT);
+  //var point = { x: Math.sin(simulationT / 36.0), y: Math.cos(simulationT / 36.0) };
+
 }
 
 function exportString()
