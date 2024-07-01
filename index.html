@@ -36,34 +36,45 @@
 						</p>
 						<hr>
             <div>
-              <div class="panel">
-                <label>Dimension:</label> <select class="panel-inset-lighter" style="color: white" name="dimension" id="dimension">
-                  <option value="1D" disabled>Scalar (1D)</option>
-                  <option value="2D">Vector (2D)</option>
-                  <option value="4D" disabled>Color (4D)</option>
-                </select>
-                <div id="x-dimensions">
-                  <b>X:</b>
-                  <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
-                  <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+              <div class="panel" style="display: flex; justify-content: space-between;">
+                <div id="dimension-panel" style="">
+                  <label>Dimension:</label> <select class="panel-inset-lighter" style="color: white; margin-top: 0.2em;" name="dimension" id="dimension">
+                    <option value="1D" disabled>Scalar (1D)</option>
+                    <option value="2D">Vector (2D)</option>
+                    <option value="4D" disabled>Color (4D)</option>
+                  </select>
+                  <div id="x-dimensions">
+                    <b>X:</b>
+                    <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
+                    <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                  </div>
+                  <div id="y-dimensions">
+                    <b>Y:</b>
+                    <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
+                    <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                  </div>
+                  <!--div id="z-dimensions">
+                    <b>Z:</b>
+                    <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
+                    <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                  </div>
+                  <div id="w-dimensions">
+                    <b>T:</b>
+                    <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
+                    <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                  </div-->
                 </div>
-                <div id="y-dimensions">
-                  <b>Y:</b>
-                  <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
-                  <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                <div id="timeline-panel" style="margin-top: 0.8em;">
+                  <b>Timeline:</b><br/>
+                  <label>current time:</label> <input id="time-text" type="text" value="0" inputmode="numeric" pattern="[0-9]*">
+                  <a id="button-play" class="button square-button"><div>&#9654;&#9724;</div></a> 
+                  <br/>
+                  <div style="width: 100%">
+                    <input id="time-slider" class="slider panel-inset-lighter" type="range" min="0" max="100" value="0">
+                  </div>
                 </div>
-                <!--div id="z-dimensions">
-                  <b>Z:</b>
-                  <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
-                  <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
-                </div>
-                <div id="w-dimensions">
-                  <b>W:</b>
-                  <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
-                  <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
-                </div-->
               </div>
-              <div id="graph-area" style="display: inline-block; *display: inline; zoom: 1; vertical-align: top;">
+              <div id="graph-area" style="display: inline-block; zoom: 1; vertical-align: top;">
                 <canvas id="graph" height="800" width="800" class="graph"></canvas>
               </div>
               <div id="right-column">

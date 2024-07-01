@@ -37,14 +37,15 @@ $( document ).ready(function() {
 
 function addPointControl()
 {
-  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button">X</a> point <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p> <p>tangent <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p></div>');
+  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button">X</a> point <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p> <p>tangent <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p> <p><label>timestamp:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p></div>');
   var pointx = newPanel.find( "input" ).eq(0);
   var pointy = newPanel.find( "input" ).eq(1);
   var tangentx = newPanel.find( "input" ).eq(2);
   var tangenty = newPanel.find( "input" ).eq(3);
+  var timestamp = newPanel.find( "input" ).eq(4);
   var removeButton = newPanel.find( "a" ).eq(0);
   fieldArea.append(newPanel);
-  return { panel: newPanel, remove: removeButton, point: { x: pointx, y: pointy }, tangent: { x: tangentx, y: tangenty } };
+  return { panel: newPanel, remove: removeButton, point: { x: pointx, y: pointy }, tangent: { x: tangentx, y: tangenty }, timestamp: timestamp };
 }
 
 function addPoint()
@@ -59,6 +60,7 @@ function addPoint()
                 tangent: { x: 1, y: -1, z: 1, w: 1 },
                 point_handle: pointHandle,
                 tangent_handle: tangentHandle,
+                timestamp: 0,
                 controls: controls }
   points.push(entry);
 	dragElement(entry);
@@ -66,14 +68,16 @@ function addPoint()
   controls.point.y.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.tangent.x.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.tangent.y.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
+  controls.timestamp.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.remove.click(function() { removePoint(entry.index); paintGraph(); });
 
   controls.point.x.val(entry.point.x);
   controls.point.y.val(entry.point.y);
   controls.tangent.x.val(entry.tangent.x);
   controls.tangent.y.val(entry.tangent.y);
+  controls.timestamp.val(entry.timestamp);
 
-  refreshPointEntry(entry, true)
+  refreshPointEntry(entry, false, true);
   return entry;
 }
 
@@ -104,7 +108,7 @@ function resizeDataArea()
   points.forEach(refreshPointHandle);
 }
 
-function refreshPointEntry(entry, dataOnly = false)
+function refreshPointEntry(entry, nested = false, dataOnly = false)
 {
   if (!dataOnly)
   {
@@ -124,15 +128,18 @@ function refreshPointEntry(entry, dataOnly = false)
   entry.controls.point.y.val( roundDecimals(entry.point.y, 2) );
   entry.controls.tangent.x.val( roundDecimals(entry.tangent.x, 2) );
   entry.controls.tangent.y.val( roundDecimals(entry.tangent.y, 2) );
-  refreshPointHandle(entry); // propagate rounding back to the handle
+  entry.controls.timestamp.val( Math.trunc(parseFloat(entry.timestamp)) );
+  if (!nested)
+    refreshPointHandle(entry, true); // propagate rounding back to the handle
 }
 
-function refreshPointHandle(entry)
+function refreshPointHandle(entry, nested = false)
 {
   entry.point = { x: parseFloat(entry.controls.point.x.val()),
                   y: parseFloat(entry.controls.point.y.val()) };
   entry.tangent = { x: parseFloat(entry.controls.tangent.x.val()),
                     y: parseFloat(entry.controls.tangent.y.val()) };
+  entry.timestamp = parseFloat(entry.controls.timestamp.val());
 
   var tangent = { x: entry.point.x + entry.tangent.x, y: entry.point.y + entry.tangent.y };
   var point = dataToDisplay(entry.point);
@@ -145,6 +152,8 @@ function refreshPointHandle(entry)
   entry.tangent_handle.css({left: graph.offset().left - entry.tangent_handle.width()/2 + tangent.x,
                             top: graph.offset().top - entry.tangent_handle.height()/2 + tangent.y,
                             position:'absolute'});
+  if (!nested)
+    refreshPointEntry(entry, true);
 }
 
 function dataToDisplay(position)
@@ -178,7 +187,7 @@ function exportString()
   var string = '[\n';
   for (var i = 0; i < points.length; ++i)
   {
-    string += '  { "value": { "x":' + points[i].point.x + ', "y":' + points[i].point.y + ' }, "tangent" : { "x":' + points[i].tangent.x + ', "y":' + points[i].tangent.y + ' }}';
+    string += '  { "timestamp": ' + points[i].timestamp + ', "value": { "x":' + points[i].point.x + ', "y":' + points[i].point.y + ' }, "tangent" : { "x":' + points[i].tangent.x + ', "y":' + points[i].tangent.y + ' }}';
     if (i+1 < points.length)
       string += ',\n';
     else
@@ -201,11 +210,9 @@ function importString()
     newie.point.y = parseFloat(inputTree[i].value.y);
     newie.tangent.x = parseFloat(inputTree[i].tangent.x);
     newie.tangent.y = parseFloat(inputTree[i].tangent.y);
-    refreshPointEntry(newie, true);
+    newie.timestamp = parseFloat(inputTree[i].timestamp);
+    refreshPointEntry(newie, false, true);
   }
-  // }
-  // for (var i = 0; i < inputTree.length; ++i)
-  //   console.log(inputTree[i].value.x);
 
   if (points.length == 0)
     addPoint();
@@ -214,8 +221,6 @@ function importString()
 function bezier( A, B, C, D, t )
 {
 	var mt = 1 - t;
-	//var x = A.x * mt * mt + (C.x + 2 * (C.x - D.x)) * 2 * mt * t + C.x * t * t;
-	//var y = A.y * mt * mt + (C.y + 2 * (C.y - D.y)) * 2 * mt * t + C.y * t * t;
   var projB = { x: A.x + B.x ,
                 y: A.y + B.y  };
   var projD = { x: C.x - D.x,
@@ -243,7 +248,6 @@ function paintBezier(ctx,A,B,C,D)
     post = dataToDisplay(post);
 		ctx.moveTo(prev.x, prev.y);
 		ctx.lineTo(post.x, post.y);
-		//console.log(prev.x + "" + prev.y + " to " + post.x + "," + post.y);
 		if (last)
 			break;
 	}
@@ -265,29 +269,92 @@ function paintControl(ctx,A,B,color)
   ctx.stroke();
 }
 
-function paintGrid(ctx)
+function paintGridLinesX(ctx, width, color, xmin, xmax, xdelta)
 {
-  ctx.fillStyle = "black";
-	ctx.fillRect(0, 0, 800, 800);
-
 	ctx.beginPath();
-	ctx.lineWidth = 1;
-	for (var x = dataArea.x.min; x <= dataArea.x.max; x += 1)
-	{
+	ctx.lineWidth = width;
+  ctx.strokeStyle = color;
+  for (var x = xmin; x <= xmax; x += xdelta)
+  {
     var dataPointA = dataToDisplay({ x: x, y: dataArea.y.min });
     var dataPointB = dataToDisplay({ x: x, y: dataArea.y.max });
-		ctx.moveTo(dataPointA.x, dataPointA.y);
-		ctx.lineTo(dataPointB.x, dataPointB.y);
-	}
-	for (var y = dataArea.y.min; y <= dataArea.y.max; y += 1)
+    ctx.moveTo(dataPointA.x, dataPointA.y);
+    ctx.lineTo(dataPointB.x, dataPointB.y);
+  }
+  ctx.stroke();
+}
+function paintGridLinesY(ctx, width, color, ymin, ymax, ydelta)
+{
+	ctx.beginPath();
+	ctx.lineWidth = width;
+  ctx.strokeStyle = color;
+	for (var y = ymin; y <= ymax; y += ydelta)
 	{
     var dataPointA = dataToDisplay({ x: dataArea.x.min, y: y });
     var dataPointB = dataToDisplay({ x: dataArea.x.max, y: y });
 		ctx.moveTo(dataPointA.x, dataPointA.y);
 		ctx.lineTo(dataPointB.x, dataPointB.y);
 	}
-  ctx.strokeStyle = "white";
   ctx.stroke();
+}
+
+function paintGridLabelX(ctx, color, style, xmin, xmax, xdelta)
+{
+  ctx.font = style;
+	ctx.fillStyle = color;
+	for (var x = 0; x <= xmax; x += xdelta)
+  {
+    var dataPoint = dataToDisplay({ x: x, y: dataArea.y.min});
+    ctx.fillText(x,dataPoint.x + 3, dataPoint.y + 15);
+  }
+  for (var x = -xdelta; x > xmin; x -= xdelta)
+  {
+    var dataPoint = dataToDisplay({ x: x, y: dataArea.y.min});
+    ctx.fillText(x,dataPoint.x + 3, dataPoint.y + 15);
+  }
+}
+function paintGridLabelY(ctx, color, style, ymin, ymax, ydelta)
+{
+  ctx.font = style;
+	ctx.fillStyle = color;
+	for (var y = 0; y <= ymax; y += ydelta)
+  {
+    var dataPoint = dataToDisplay({ x: dataArea.x.min, y: y });
+    ctx.fillText(y,dataPoint.x + 3, dataPoint.y - 5);
+  }
+  for (var y = -ydelta; y > ymin; y -= ydelta)
+  {
+    var dataPoint = dataToDisplay({ x: dataArea.x.min, y: y });
+    ctx.fillText(y,dataPoint.x + 3, dataPoint.y - 5);
+  }
+}
+
+function paintGrid(ctx)
+{
+  ctx.fillStyle = "black";
+	ctx.fillRect(0, 0, 800, 800);
+
+  var xmin = dataArea.x.min < dataArea.x.max ? dataArea.x.min : dataArea.x.max;
+  var xmax = dataArea.x.min > dataArea.x.max ? dataArea.x.min : dataArea.x.max;
+  var xdelta = 1;
+  if (xmax - xmin >= 30)
+  {
+    paintGridLinesX(ctx, 1, "#555555", xmin, xmax, xdelta);
+    xdelta = 10;
+  }
+  paintGridLinesX(ctx, 1, "white", xmin, xmax, xdelta);
+  paintGridLabelX(ctx, "white", "1em Arial", xmin, xmax, xdelta)
+
+  var ymin = dataArea.y.min < dataArea.y.max ? dataArea.y.min : dataArea.y.max;
+  var ymax = dataArea.y.min > dataArea.y.max ? dataArea.y.min : dataArea.y.max;
+  var ydelta = 1;
+  if (ymax - ymin >= 30)
+  {
+    paintGridLinesY(ctx, 1, "#555555", ymin, ymax, ydelta);
+    ydelta = 10;
+  }
+  paintGridLinesY(ctx, 1, "white", ymin, ymax, ydelta);
+  paintGridLabelY(ctx, "white", "1em Arial", ymin, ymax, ydelta)
 
 	ctx.beginPath();
 	ctx.lineWidth = 2;
@@ -314,16 +381,15 @@ function paintGraph()
 }
 
 function dragElement(entry) {
-  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  var mouseXdelta = 0, mouseYdelta = 0, mouseXstart = 0, mouseYstart = 0;
   entry.point_handle.on( "mousedown", dragMouseDownPoint );
   entry.tangent_handle.on( "mousedown", dragMouseDownTangent );
 
   function dragMouseDownTangent(e) {
     e = e || window.event;
     e.preventDefault();
-    // get the mouse cursor position at startup:
-    pos3 = e.clientX;
-    pos4 = e.clientY;
+    mouseXstart = e.clientX;
+    mouseYstart = e.clientY;
     document.onmouseup = closeDragElement;
     document.onmousemove = elementDragTangent;
   }
@@ -331,9 +397,8 @@ function dragElement(entry) {
    function dragMouseDownPoint(e) {
     e = e || window.event;
     e.preventDefault();
-    // get the mouse cursor position at startup:
-    pos3 = e.clientX;
-    pos4 = e.clientY;
+    mouseXstart = e.clientX;
+    mouseYstart = e.clientY;
     document.onmouseup = closeDragElement;
     document.onmousemove = elementDragPoint;
   }
@@ -341,13 +406,12 @@ function dragElement(entry) {
   function elementDragTangent(e) {
     e = e || window.event;
     e.preventDefault();
-    // calculate the new cursor position:
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    entry.tangent_handle.css({top: entry.tangent_handle.offset().top - pos2,
-                              left: entry.tangent_handle.offset().left - pos1,
+    mouseXdelta = mouseXstart - e.clientX;
+    mouseYdelta = mouseYstart - e.clientY;
+    mouseXstart = e.clientX;
+    mouseYstart = e.clientY;
+    entry.tangent_handle.css({left: entry.tangent_handle.offset().left - mouseXdelta,
+                              top: entry.tangent_handle.offset().top - mouseYdelta,
                               position:'absolute'});
     refreshPointEntry(entry);
     paintGraph();
@@ -357,15 +421,15 @@ function dragElement(entry) {
     e = e || window.event;
     e.preventDefault();
     // calculate the new cursor position:
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    entry.point_handle.css({top: entry.point_handle.offset().top - pos2,
-                            left: entry.point_handle.offset().left - pos1,
+    mouseXdelta = mouseXstart - e.clientX;
+    mouseYdelta = mouseYstart - e.clientY;
+    mouseXstart = e.clientX;
+    mouseYstart = e.clientY;
+    entry.point_handle.css({left: entry.point_handle.offset().left - mouseXdelta,
+                            top: entry.point_handle.offset().top - mouseYdelta,
                             position:'absolute'});
-    entry.tangent_handle.css({top: entry.tangent_handle.offset().top - pos2,
-                              left: entry.tangent_handle.offset().left - pos1,
+    entry.tangent_handle.css({left: entry.tangent_handle.offset().left - mouseXdelta,
+                              top: entry.tangent_handle.offset().top - mouseYdelta,
                               position:'absolute'});
     refreshPointEntry(entry);
     paintGraph();
