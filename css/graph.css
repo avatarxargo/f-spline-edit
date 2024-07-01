@@ -17,6 +17,17 @@
   float: right;
 }
 
+.simulation-point {
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	border-radius: 5px;
+	z-index: 10;
+	background-color: #e69e1a;
+	border: 1px solid #140a25;
+	text-align: center;
+}
+
 #field-area {
   margin-top: 0;
   overflow-y: scroll;

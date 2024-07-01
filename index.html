@@ -67,7 +67,7 @@
                 <div id="timeline-panel" style="margin-top: 0.8em;">
                   <b>Timeline:</b><br/>
                   <label>current time:</label> <input id="time-text" type="text" value="0" inputmode="numeric" pattern="[0-9]*">
-                  <a id="button-play" class="button square-button"><div>&#9654;&#9724;</div></a> 
+                  <a id="button-play" class="button square-button"><div>?</div></a> 
                   <br/>
                   <div style="width: 100%">
                     <input id="time-slider" class="slider panel-inset-lighter" type="range" min="0" max="100" value="0">
@@ -75,7 +75,8 @@
                 </div>
               </div>
               <div id="graph-area" style="display: inline-block; zoom: 1; vertical-align: top;">
-                <canvas id="graph" height="800" width="800" class="graph"></canvas>
+                  <canvas id="graph" height="800" width="800" class="graph"></canvas>
+                  <span id="simulation-point" class="simulation-point"></span>
               </div>
               <div id="right-column">
                 <div id="field-area" class="panel-inset-lighter">

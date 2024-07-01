@@ -5,6 +5,11 @@ var graph;
 var graphDOM;
 var fieldArea
 
+var simulationT = 0;
+var simulationPoint;
+var simulationInterval;
+var playbackStatus = false;
+
 var dataArea = { x: {min: -10, max: 10 },
                  y: {min: -10, max: 10 },
                  z: {min: -10, max: 10 },
@@ -27,12 +32,16 @@ $( document ).ready(function() {
   $( "#x-dimensions input" ).on('input', function(){ resizeDataArea(); paintGraph(); });
   $( "#y-dimensions input" ).on('input', function(){ resizeDataArea(); paintGraph(); });
 
+  $("#button-play").click(function() { togglePlayback(!playbackStatus); })
+  simulationPoint = $("#simulation-point");
+  
   $("#button-add").click( function() { addPoint(); paintGraph(); });
   $("#import").click( function() { importString(); paintGraph(); });
   $("#export").click( function() { exportString(); });
 
   resizeDataArea();
 	paintGraph();
+  togglePlayback(false);
 });
 
 function addPointControl()
@@ -180,6 +189,31 @@ function getPoint(jqele) {
 	var x = getPosX(jqele);
 	var y = getPosY(jqele);
 	return {x, y};
+}
+
+function togglePlayback(tgt)
+{
+  playbackStatus = tgt;
+  if (tgt)
+  {
+    $("#button-play").text("\u25FC");
+    simulationPoint.show();
+    simulationInterval = setInterval(updatePlayback, 1);
+  }
+  else
+  {
+    $("#button-play").text("\u25B6");
+    simulationPoint.hide();
+    window.clearInterval(simulationInterval);
+  }
+}
+
+function updatePlayback()
+{
+  simulationT += 1;
+  simulationPoint.css({left: graph.offset().left - simulationPoint.width()/2 + 400 + 50 * Math.sin(simulationT / 36.0),
+                      top: graph.offset().top - simulationPoint.height()/2 + 400 + 50 * Math.cos(simulationT / 36.0),
+                      position:'absolute'});
 }
 
 function exportString()
