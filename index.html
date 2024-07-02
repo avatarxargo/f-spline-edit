@@ -64,8 +64,9 @@
                     <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
                   </div-->
                 </div>
-                <div id="timeline-panel" style="margin-top: 0.8em;">
+                <div id="timeline-panel" style="margin-top: 0.4em;">
                   <b>Timeline:</b><br/>
+                  <i>(Values shown in ticks. 1 tick = 16ms during 60fps)</i><br/>
                   <label>current time:</label> <input id="time-text" type="text" value="0" inputmode="numeric" pattern="[0-9]*">
                   <a id="button-play" class="button square-button"><div>?</div></a> 
                   <br/>
@@ -92,8 +93,10 @@
               <h5>Import/Export String:</h5>
               <textarea id="iostring" name="iostring" rows="4" cols="50" style = "resize: none;">Lua crap here</textarea>
               <div style="justify-content: flex-end; flex-wrap: wrap; text-align: right;">
-                <a id="import" class="button flex flex-space-between" style="display: inline-block"><div>Import from String</div></a>
-                <a id="export" class="button flex flex-space-between" style="display: inline-block"><div>Export to String</div></a>
+                <a id="export-lua" class="button flex flex-space-between" style="display: inline-block"><div>Export to Lua (not editable)</div></a>
+                <a id="download" class="button flex flex-space-between" style="display: inline-block"><div>Download JSON</div></a>
+                <a id="export" class="button flex flex-space-between" style="display: inline-block"><div>Export to JSON</div></a>
+                <a id="import" class="button flex flex-space-between" style="display: inline-block"><div>Import from JSON</div></a>
               </div>
             </div>
 					</div>

@@ -31,16 +31,20 @@ $( document ).ready(function() {
     addPoint();
   console.log(points);
 
-  $( window ).on( "resize", function() { points.forEach(refreshPointHandle); paintGraph(); } );
-  $( "#x-dimensions input" ).on('input', function(){ resizeDataArea(); paintGraph(); });
-  $( "#y-dimensions input" ).on('input', function(){ resizeDataArea(); paintGraph(); });
+  $(window).on( "resize", function() { points.forEach(refreshPointHandle); paintGraph(); } );
+  $("#x-dimensions input").on('input', function(){ resizeDataArea(); paintGraph(); });
+  $("#y-dimensions input").on('input', function(){ resizeDataArea(); paintGraph(); });
 
   $("#button-play").click(function() { togglePlayback(!playbackStatus); })
   simulationPoint = $("#simulation-point");
+  $("#time-slider").on("input", function() { if(playbackStatus) return; onSliderChanged(); });
+  $("#time-text").on("change", function() { if(playbackStatus) return; onTimeTextChanged(); });
   
   $("#button-add").click( function() { addPoint(); paintGraph(); });
-  $("#import").click( function() { importString(); paintGraph(); });
+  $("#export-lua").click( function() { exportLua(); });
+  $("#download").click( function() { downloadString(); });
   $("#export").click( function() { exportString(); });
+  $("#import").click( function() { importString(); paintGraph(); });
 
   resizeDataArea();
 	paintGraph();
@@ -72,7 +76,7 @@ function addPoint()
                 tangent: { x: 1, y: -1, z: 1, w: 1 },
                 point_handle: pointHandle,
                 tangent_handle: tangentHandle,
-                timestamp: 0,
+                timestamp: points.length == 0 ? 0 : points.at(points.length-1).timestamp + 100,
                 controls: controls }
   points.push(entry);
 	dragElement(entry);
@@ -103,6 +107,7 @@ function removePoint(index)
   points.splice(index, 1);
   for (var i = 0; i < points.length; ++i)
     points[i].index = i;
+  refreshPlaybackBounds();
 }
 
 function clearPoints()
@@ -213,6 +218,23 @@ function togglePlayback(tgt)
   }
 }
 
+function onSliderChanged()
+{
+  if (playbackStatus)
+    return;
+  simulationT = $("#time-slider").val();
+  $("#time-text").val(simulationT);
+  updatePlayback();
+}
+function onTimeTextChanged()
+{
+  if (playbackStatus)
+    return;
+  simulationT = parseInt($("#time-text").val());
+  $("#time-slider").val(simulationT);
+  updatePlayback();
+}
+
 function moveSimulation(point)
 {
   point = dataToDisplay(point);
@@ -273,7 +295,7 @@ function refreshPlaybackBounds()
   $("#time-slider").prop("max", points.at(points.length - 1).timestamp);
 }
 
-function exportString()
+function getExportString()
 {
   var string = '[\n';
   for (var i = 0; i < points.length; ++i)
@@ -285,7 +307,45 @@ function exportString()
       string += '\n';
   }
   string+=']';
-  $("#iostring").val(string);
+  return string;
+}
+function getLuaExportString()
+{
+  var string = '{\n';
+  for (var i = 0; i < points.length; ++i)
+  {
+    string += '  { timestamp=' + points[i].timestamp + ', offset = { value = {x=' + points[i].point.x + ', y=' + points[i].point.y + ' }';
+    if (points[i].tangent.x != 0 || points[i].tangent.y != 0)
+      string += ', tangent = { x=' + points[i].tangent.x + ', y=' + points[i].tangent.y + ' }';
+    string += '} }';
+    if (i+1 < points.length)
+      string += ',\n';
+    else
+      string += '\n';
+  }
+  string+='}';
+  return string;
+}
+
+function downloadString() {
+  
+  const a = document.createElement('a') // Create "a" element
+  const blob = new Blob([getExportString()], {type: "text/plain"}) // Create a blob (file-like object)
+  const url = URL.createObjectURL(blob) // Create an object URL from blob
+  a.setAttribute('href', url) // Set "a" element link
+  a.setAttribute('download', "factorio-graph.txt") // Set download filename
+  a.click() // Start downloading
+  a.remove();
+}
+
+function exportString()
+{
+  $("#iostring").val(getExportString());
+}
+
+function exportLua()
+{
+  $("#iostring").val(getLuaExportString());
 }
 
 function importString()
