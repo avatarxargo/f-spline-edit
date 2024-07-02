@@ -478,17 +478,29 @@ function importString()
 function bezier( A, B, C, D, t )
 {
 	var mt = 1 - t;
-  var projB = { x: A.x + B.x ,
-                y: A.y + B.y  };
-  var projD = { x: C.x - D.x,
-                y: C.y - D.y };
+  var projB = {};
+  var projD = {};
+  projB.x = A.x + B.x;
+  projB.y = A.y + B.y;
+  projB.z = A.z + B.z;
+  projB.a = A.a + B.a;
+
+  projD.x = C.x - D.x;
+  projD.y = C.y - D.y;
+  projD.z = C.z - D.z;
+  projD.a = C.a - D.a;
+
 	var x = A.x * mt * mt * mt + projB.x * 3 * mt * mt * t + projD.x * 3 * mt * t * t + C.x * t * t * t;
 	var y = A.y * mt * mt * mt + projB.y * 3 * mt * mt * t + projD.y * 3 * mt * t * t + C.y * t * t * t;
-	return {x, y};
+	var z = A.z * mt * mt * mt + projB.z * 3 * mt * mt * t + projD.z * 3 * mt * t * t + C.z * t * t * t;
+	var a = A.a * mt * mt * mt + projB.a * 3 * mt * mt * t + projD.a * 3 * mt * t * t + C.a * t * t * t;
+	return {x, y, z, a};
 }
 
-function paintBezier(ctx,A,B,C,D)
+function paintBezier(ctx,pt1,pt2)
 {
+  if (dimension > 2)
+    return;
 	ctx.beginPath();
 	var delta = 0.05;
 	for (let x = delta; true; x += delta)
@@ -499,12 +511,24 @@ function paintBezier(ctx,A,B,C,D)
 			last = true;
 			x = 1;
 		}
-		var prev = bezier(A,B,C,D,x - delta);
-		var post = bezier(A,B,C,D,x);
-    prev = dataToDisplay(prev);
-    post = dataToDisplay(post);
-		ctx.moveTo(prev.x, prev.y);
-		ctx.lineTo(post.x, post.y);
+		var prev = bezier(pt1.point,pt1.tangent,pt2.point,pt2.tangent,x - delta);
+		var post = bezier(pt1.point,pt1.tangent,pt2.point,pt2.tangent,x);
+    if (dimension == 1)
+    {
+      var t1 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * (x - delta); 
+      var t2 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * x; 
+      prev = dataToDisplay({x: t1, y: prev.x});
+      post = dataToDisplay({x: t2, y: post.x});
+      ctx.moveTo(prev.x, prev.y);
+      ctx.lineTo(post.x, post.y);
+    }
+    else if (dimension == 2)
+    {
+      prev = dataToDisplay(prev);
+      post = dataToDisplay(post);
+      ctx.moveTo(prev.x, prev.y);
+      ctx.lineTo(post.x, post.y);
+    }
 		if (last)
 			break;
 	}
@@ -513,12 +537,29 @@ function paintBezier(ctx,A,B,C,D)
 	ctx.stroke();
 }
 
-function paintControl(ctx,A,B,color)
+function paintControl(ctx,entry,color)
 {
 	ctx.beginPath();
 	ctx.lineWidth = 3;
-  var ptA = dataToDisplay({ x: (A.x - B.x), y: (A.y - B.y) });
-  var ptB = dataToDisplay({ x: (A.x + B.x), y: (A.y + B.y) });
+  var ptA;
+  var ptB;
+  if (dimension == 1)
+  {
+    ptA = dataToDisplay({ x: entry.timestamp, y: entry.point.x });
+    ptB = dataToDisplay({ x: entry.timestamp, y: entry.point.x + entry.tangent.x });
+  }
+  else if (dimension == 2)
+  {
+    var A = entry.point;
+    var B = entry.tangent;
+    ptA = dataToDisplay({ x: (A.x - B.x), y: (A.y - B.y) });
+    ptB = dataToDisplay({ x: (A.x + B.x), y: (A.y + B.y) });
+  }
+  else if (dimension == 4)
+  {
+    ptA = dataToDisplay({ x: entry.timestamp, y: 0 });
+    ptB = dataToDisplay({ x: entry.timestamp, y: 1 });
+  }
 	ctx.moveTo(ptA.x, ptA.y);
 	ctx.lineTo(ptB.x, ptB.y);
   ctx.strokeStyle = color;
@@ -632,9 +673,9 @@ function paintGraph()
 	const ctx = graphDOM.getContext("2d");
   paintGrid(ctx);
   for (var i = 1; i < points.length; ++i)
-    paintBezier(ctx, points.at(i-1).point, points.at(i-1).tangent, points.at(i).point, points.at(i).tangent);
+    paintBezier(ctx, points.at(i-1), points.at(i));
   for (var i = 0; i < points.length; ++i)
-    paintControl(ctx, points.at(i).point, points.at(i).tangent, point_colors[i % point_colors.length]);
+    paintControl(ctx, points.at(i), point_colors[i % point_colors.length]);
   if (!playbackStatus)
     updatePlayback();
 }
