@@ -69,7 +69,10 @@ function setDimension()
     dimension = 4;
   applyDimension();
   if (ogDimension != dimension)
+  {
+    points.forEach(refreshPointHandle);
     paintGraph();
+  }
 }
 function applyDimension()
 {
@@ -79,34 +82,59 @@ function applyDimension()
     $(".2d").hide()
 
   if (dimension >= 4)
+  {
     $(".4d").show()
+    $(".n4d").hide()
+  }
   else
+  {
     $(".4d").hide()
+    $(".n4d").show()
+  }
 }
 
 function addPointControl()
 {
-  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button">X</a> point <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label class="2d">y:</label> <input class="2d" type="text" inputmode="numeric" pattern="[0-9]*"></p> <p>tangent <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label class="2d">y:</label> <input class="2d" type="text" inputmode="numeric" pattern="[0-9]*"></p> <p><label>timestamp:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p></div>');
+  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button">X</a> point ' +
+                    '<label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*">'+
+                    '<label class="2d">y:</label> <input class="2d" type="text" inputmode="numeric" pattern="[0-9]*">'+
+                    '<br/ class="4d"><label class="4d">z:</label> <input class="4d" type="text" inputmode="numeric" pattern="[0-9]*">'+
+                    '<label class="4d">a:</label> <input class="4d" type="text" inputmode="numeric" pattern="[0-9]*"></p>'+
+                    '<p>tangent <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*">'+
+                    '<label class="2d">y:</label> <input class="2d" type="text" inputmode="numeric" pattern="[0-9]*">'+
+                    '<br/ class="4d"><label class="4d">z:</label> <input class="4d" type="text" inputmode="numeric" pattern="[0-9]*">'+
+                    '<label class="4d">a:</label> <input class="4d" type="text" inputmode="numeric" pattern="[0-9]*"></p>'+
+                    '<p><label>timestamp:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p></div>');
   var pointx = newPanel.find( "input" ).eq(0);
   var pointy = newPanel.find( "input" ).eq(1);
-  var tangentx = newPanel.find( "input" ).eq(2);
-  var tangenty = newPanel.find( "input" ).eq(3);
-  var timestamp = newPanel.find( "input" ).eq(4);
+  var pointz = newPanel.find( "input" ).eq(2);
+  var pointa = newPanel.find( "input" ).eq(3);
+
+  var tangentx = newPanel.find( "input" ).eq(4);
+  var tangenty = newPanel.find( "input" ).eq(5);
+  var tangentz = newPanel.find( "input" ).eq(6);
+  var tangenta = newPanel.find( "input" ).eq(7);
+
+  var timestamp = newPanel.find( "input" ).eq(8);
   var removeButton = newPanel.find( "a" ).eq(0);
   fieldArea.append(newPanel);
-  return { panel: newPanel, remove: removeButton, point: { x: pointx, y: pointy }, tangent: { x: tangentx, y: tangenty }, timestamp: timestamp };
+  return { panel: newPanel,
+           remove: removeButton,
+           point: { x: pointx, y: pointy, z: pointz, a: pointa },
+           tangent: { x: tangentx, y: tangenty, z: tangentz, a: tangenta },
+           timestamp: timestamp };
 }
 
 function addPoint()
 {
   var pointHandle = $( '<div class="ctrl-point"></div>' ).first();
-  var tangentHandle = $( '<div class="ctrl-point"></div>' ).first();
+  var tangentHandle = $( '<div class="ctrl-point n4d"></div>' ).first();
   $("#graph-area").append( pointHandle );
   $("#graph-area").append( tangentHandle );
   var controls = addPointControl();
   var entry = { index: points.length,
-                point: { x: points.length, y: 0, z: 0, w: 0 },
-                tangent: { x: 1, y: -1, z: 1, w: 1 },
+                point: { x: points.length, y: 0, z: 0, a: 0 },
+                tangent: { x: 1, y: 1, z: 1, a: 1 },
                 point_handle: pointHandle,
                 tangent_handle: tangentHandle,
                 timestamp: points.length == 0 ? 0 : points.at(points.length-1).timestamp + 100,
@@ -167,19 +195,38 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
                   y: entry.point_handle.offset().top + entry.point_handle.height()/2 - graph.offset().top };
     var tangent = { x: entry.tangent_handle.offset().left + entry.tangent_handle.width()/2 - graph.offset().left,
                     y: entry.tangent_handle.offset().top + entry.tangent_handle.height()/2 - graph.offset().top };
+    if (dimension == 1)
+    {
+      var point1d = displayToData(point);
+      var tangent1d = displayToData(tangent);
 
-    entry.point = displayToData(point);
-    entry.tangent = displayToData(tangent);
+      entry.point.x = point1d.y;
+      entry.timestamp = parseInt(point1d.x);
+      entry.tangent.x = tangent1d.y - entry.point.x;
+    }
+    else if (dimension == 2)
+    {
+      entry.point = displayToData(point);
+      var tangent2d = displayToData(tangent);
 
-    entry.tangent.x = entry.tangent.x - entry.point.x;
-    entry.tangent.y = entry.tangent.y - entry.point.y;
+      entry.tangent.x = tangent2d.x - entry.point.x;
+      entry.tangent.y = tangent2d.y - entry.point.y;
+    }
+    else if (dimension == 4)
+    {
+
+    }
   }
 
   entry.controls.point.x.val( roundDecimals(entry.point.x, 2) );
   entry.controls.point.y.val( roundDecimals(entry.point.y, 2) );
+  entry.controls.point.z.val( roundDecimals(entry.point.z, 2) );
+  entry.controls.point.a.val( roundDecimals(entry.point.a, 2) );
   entry.controls.tangent.x.val( roundDecimals(entry.tangent.x, 2) );
   entry.controls.tangent.y.val( roundDecimals(entry.tangent.y, 2) );
-  entry.controls.timestamp.val( Math.trunc(parseFloat(entry.timestamp)) );
+  entry.controls.tangent.z.val( roundDecimals(entry.tangent.a, 2) );
+  entry.controls.tangent.a.val( roundDecimals(entry.tangent.z, 2) );
+  entry.controls.timestamp.val( parseInt(entry.timestamp) );
   refreshPlaybackBounds();
   if (!nested)
     refreshPointHandle(entry, true); // propagate rounding back to the handle
@@ -187,23 +234,48 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
 
 function refreshPointHandle(entry, nested = false)
 {
-  entry.point = { x: parseFloat(entry.controls.point.x.val()),
-                  y: parseFloat(entry.controls.point.y.val()) };
-  entry.tangent = { x: parseFloat(entry.controls.tangent.x.val()),
-                    y: parseFloat(entry.controls.tangent.y.val()) };
-  entry.timestamp = parseFloat(entry.controls.timestamp.val());
+  entry.point.x = parseFloat(entry.controls.point.x.val());
+  entry.point.y = parseFloat(entry.controls.point.y.val());
+  entry.point.z = parseFloat(entry.controls.point.z.val());
+  entry.point.a = parseFloat(entry.controls.point.a.val());
 
-  var tangent = { x: entry.point.x + entry.tangent.x, y: entry.point.y + entry.tangent.y };
-  var point = dataToDisplay(entry.point);
-  tangent = dataToDisplay(tangent);
+  entry.tangent.x = parseFloat(entry.controls.tangent.x.val());
+  entry.tangent.y = parseFloat(entry.controls.tangent.y.val());
+  entry.tangent.z = parseFloat(entry.controls.tangent.z.val());
+  entry.tangent.a = parseFloat(entry.controls.tangent.a.val());
 
-  entry.point_handle.css({left: graph.offset().left - entry.point_handle.width()/2 + point.x,
-                          top: graph.offset().top - entry.point_handle.height()/2 + point.y,
-                          position:'absolute'});
+  entry.timestamp = parseInt(entry.controls.timestamp.val());
+  var tangent = { x: entry.point.x + entry.tangent.x,
+                  y: entry.point.y + entry.tangent.y,
+                  z: entry.point.x + entry.tangent.z,
+                  a: entry.point.y + entry.tangent.a };
 
-  entry.tangent_handle.css({left: graph.offset().left - entry.tangent_handle.width()/2 + tangent.x,
-                            top: graph.offset().top - entry.tangent_handle.height()/2 + tangent.y,
+  if (dimension == 1)
+  {
+    var point1d = dataToDisplay({ x: entry.timestamp, y: entry.point.x });
+    var tangent1d = dataToDisplay({ x: entry.timestamp, y: tangent.x });
+    entry.point_handle.css({left: graph.offset().left - entry.point_handle.width()/2 + point1d.x,
+                            top: graph.offset().top - entry.point_handle.height()/2 + point1d.y,
                             position:'absolute'});
+    entry.tangent_handle.css({left: graph.offset().left - entry.tangent_handle.width()/2 + tangent1d.x,
+                              top: graph.offset().top - entry.tangent_handle.height()/2 + tangent1d.y,
+                              position:'absolute'});
+  }
+  else if (dimension == 2)
+  {
+    var point2d = dataToDisplay(entry.point);
+    var tangent2d = dataToDisplay(tangent);
+    entry.point_handle.css({left: graph.offset().left - entry.point_handle.width()/2 + point2d.x,
+                            top: graph.offset().top - entry.point_handle.height()/2 + point2d.y,
+                            position:'absolute'});
+    entry.tangent_handle.css({left: graph.offset().left - entry.tangent_handle.width()/2 + tangent2d.x,
+                              top: graph.offset().top - entry.tangent_handle.height()/2 + tangent2d.y,
+                              position:'absolute'});
+  }
+  else if (dimension == 4)
+  {
+    
+  }
   if (!nested)
     refreshPointEntry(entry, true);
 }

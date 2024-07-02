@@ -41,7 +41,7 @@
                   <label>Dimension:</label> <select id="dimension" class="panel-inset-lighter" style="color: white; margin-top: 0.2em;" name="dimension">
                     <option value="1D">Scalar (1D)</option>
                     <option value="2D">Vector (2D)</option>
-                    <option value="4D" disabled>Color (4D)</option>
+                    <option value="4D">Color (4D)</option>
                   </select>
                   <div id="x-dimensions">
                     <b>X:</b>
@@ -50,19 +50,19 @@
                   </div>
                   <div class="2d" id="y-dimensions">
                     <b>Y:</b>
-                    <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
-                    <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                    <label>min:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
+                    <label>max:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
                   </div>
-                  <!--div id="z-dimensions">
+                  <div class="4d" id="z-dimensions">
                     <b>Z:</b>
                     <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
                     <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
                   </div>
-                  <div id="w-dimensions">
-                    <b>T:</b>
+                  <div class="4d" id="w-dimensions">
+                    <b>A:</b>
                     <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
                     <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
-                  </div-->
+                  </div>
                 </div>
                 <div id="timeline-panel" style="margin-top: 0.4em;">
                   <b>Timeline:</b><br/>
