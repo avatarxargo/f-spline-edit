@@ -4,6 +4,7 @@ var point_colors = [ "#facb5f","#77bfc7","#9f59c2","#599f52" ];
 var graph;
 var graphDOM;
 var fieldArea
+var dimension = 2;
 
 const millsPerTick = 16 // 60 ticks per second -> 1000ms/60ticks = 16 at shortest.
 
@@ -32,6 +33,7 @@ $( document ).ready(function() {
   console.log(points);
 
   $(window).on( "resize", function() { points.forEach(refreshPointHandle); paintGraph(); } );
+  $("#dimension").on('change', setDimension);
   $("#x-dimensions input").on('input', function(){ resizeDataArea(); paintGraph(); });
   $("#y-dimensions input").on('input', function(){ resizeDataArea(); paintGraph(); });
 
@@ -39,6 +41,8 @@ $( document ).ready(function() {
   simulationPoint = $("#simulation-point");
   $("#time-slider").on("input", function() { if(playbackStatus) return; onSliderChanged(); });
   $("#time-text").on("change", function() { if(playbackStatus) return; onTimeTextChanged(); });
+  $("#time-slider").on("mousedown", function() { togglePlayback(false); });
+  $("#time-text").on("mousedown", function() { togglePlayback(false); });
   
   $("#button-add").click( function() { addPoint(); paintGraph(); });
   $("#export-lua").click( function() { exportLua(); });
@@ -49,11 +53,40 @@ $( document ).ready(function() {
   resizeDataArea();
 	paintGraph();
   togglePlayback(false);
+  setDimension();
 });
+
+function setDimension()
+{
+  var optionSelected = $("#dimension").find("option:selected");
+  var valueSelected  = optionSelected.val();
+  var ogDimension = dimension;
+  if (valueSelected == "1D")
+    dimension = 1;
+  else if (valueSelected == "2D")
+    dimension = 2;
+  else if (valueSelected == "4D")
+    dimension = 4;
+  applyDimension();
+  if (ogDimension != dimension)
+    paintGraph();
+}
+function applyDimension()
+{
+  if (dimension >= 2)
+    $(".2d").show()
+  else
+    $(".2d").hide()
+
+  if (dimension >= 4)
+    $(".4d").show()
+  else
+    $(".4d").hide()
+}
 
 function addPointControl()
 {
-  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button">X</a> point <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p> <p>tangent <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label>y:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p> <p><label>timestamp:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p></div>');
+  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button">X</a> point <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label class="2d">y:</label> <input class="2d" type="text" inputmode="numeric" pattern="[0-9]*"></p> <p>tangent <label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"><label class="2d">y:</label> <input class="2d" type="text" inputmode="numeric" pattern="[0-9]*"></p> <p><label>timestamp:</label> <input type="text" inputmode="numeric" pattern="[0-9]*"></p></div>');
   var pointx = newPanel.find( "input" ).eq(0);
   var pointy = newPanel.find( "input" ).eq(1);
   var tangentx = newPanel.find( "input" ).eq(2);
@@ -94,6 +127,7 @@ function addPoint()
   controls.timestamp.val(entry.timestamp);
 
   refreshPointEntry(entry, false, true);
+  applyDimension();
   return entry;
 }
 

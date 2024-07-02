@@ -38,8 +38,8 @@
             <div>
               <div class="panel" style="display: flex; justify-content: space-between;">
                 <div id="dimension-panel" style="">
-                  <label>Dimension:</label> <select class="panel-inset-lighter" style="color: white; margin-top: 0.2em;" name="dimension" id="dimension">
-                    <option value="1D" disabled>Scalar (1D)</option>
+                  <label>Dimension:</label> <select id="dimension" class="panel-inset-lighter" style="color: white; margin-top: 0.2em;" name="dimension">
+                    <option value="1D">Scalar (1D)</option>
                     <option value="2D">Vector (2D)</option>
                     <option value="4D" disabled>Color (4D)</option>
                   </select>
@@ -48,7 +48,7 @@
                     <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
                     <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
                   </div>
-                  <div id="y-dimensions">
+                  <div class="2d" id="y-dimensions">
                     <b>Y:</b>
                     <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
                     <label>max:</label> <input type="text" value="10.0" inputmode="numeric" pattern="[0-9]*">
