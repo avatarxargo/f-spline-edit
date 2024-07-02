@@ -5,7 +5,10 @@ var graph;
 var graphDOM;
 var fieldArea
 
+const millsPerTick = 16 // 60 ticks per second -> 1000ms/60ticks = 16 at shortest.
+
 var simulationT = 0;
+var simulationStartTime;
 var simulationPoint;
 var simulationInterval;
 var playbackStatus = false;
@@ -138,6 +141,7 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
   entry.controls.tangent.x.val( roundDecimals(entry.tangent.x, 2) );
   entry.controls.tangent.y.val( roundDecimals(entry.tangent.y, 2) );
   entry.controls.timestamp.val( Math.trunc(parseFloat(entry.timestamp)) );
+  refreshPlaybackBounds();
   if (!nested)
     refreshPointHandle(entry, true); // propagate rounding back to the handle
 }
@@ -197,13 +201,14 @@ function togglePlayback(tgt)
   if (tgt)
   {
     $("#button-play").text("\u25FC");
-    simulationPoint.show();
-    simulationInterval = setInterval(updatePlayback, 1);
+    simulationPoint.css("opacity", "1");
+    simulationStartTime = Date.now() - (simulationT * millsPerTick); // compensate for the currently selected simulation time.
+    simulationInterval = setInterval(updatePlayback, millsPerTick);
   }
   else
   {
     $("#button-play").text("\u25B6");
-    simulationPoint.hide();
+    simulationPoint.css("opacity", "0.5");
     window.clearInterval(simulationInterval);
   }
 }
@@ -218,22 +223,30 @@ function moveSimulation(point)
 
 function updatePlayback()
 {
-  if (points.length < 2)
-    return;
-  simulationT += 1;
+  if (playbackStatus)
+  {
+    var millsElapsed = Date.now() - simulationStartTime;
+    simulationT = Math.trunc(points.at(0).timestamp + millsElapsed/millsPerTick);
+  }
 
   var point;
   if (simulationT <= points.at(0).timestamp)
   {
     moveSimulation(points.at(0).point);
-    $("#time-text").val(simulationT);
+    refreshPlaybackT();
     return;
   }
   if (simulationT >= points.at(points.length - 1).timestamp)
   {
     moveSimulation(points.at(points.length - 1).point);
     simulationT = points.at(0).timestamp; // reset loop
-    $("#time-text").val(simulationT);
+    simulationStartTime = Date.now();
+    refreshPlaybackT();
+    return;
+  }
+  if (points.length < 2)
+  {
+    refreshPlaybackT();
     return;
   }
     
@@ -243,9 +256,21 @@ function updatePlayback()
   var t = points.at(i).timestamp != points.at(i-1).timestamp ? (simulationT - points.at(i-1).timestamp) / (points.at(i).timestamp - points.at(i-1).timestamp) : 0;
   var point = bezier(points.at(i-1).point, points.at(i-1).tangent, points.at(i).point, points.at(i).tangent, t);
   moveSimulation(point);
-  $("#time-text").val(simulationT);
-  //var point = { x: Math.sin(simulationT / 36.0), y: Math.cos(simulationT / 36.0) };
+  refreshPlaybackT();
+}
 
+function refreshPlaybackT()
+{
+  $("#time-text").val(simulationT);
+  $("#time-slider").val(simulationT);
+}
+
+function refreshPlaybackBounds()
+{
+  if (points.length < 1)
+    return;
+  $("#time-slider").prop("min", points.at(0).timestamp);
+  $("#time-slider").prop("max", points.at(points.length - 1).timestamp);
 }
 
 function exportString()
@@ -444,6 +469,8 @@ function paintGraph()
     paintBezier(ctx, points.at(i-1).point, points.at(i-1).tangent, points.at(i).point, points.at(i).tangent);
   for (var i = 0; i < points.length; ++i)
     paintControl(ctx, points.at(i).point, points.at(i).tangent, point_colors[i % point_colors.length]);
+  if (!playbackStatus)
+    updatePlayback();
 }
 
 function dragElement(entry) {
