@@ -143,8 +143,12 @@ function addPoint()
 	dragElement(entry);
   controls.point.x.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.point.y.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
+  controls.point.z.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
+  controls.point.a.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.tangent.x.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.tangent.y.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
+  controls.tangent.z.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
+  controls.tangent.a.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.timestamp.on('input', function(){ refreshPointHandle(entry); paintGraph(); });
   controls.remove.click(function() { removePoint(entry.index); paintGraph(); });
 
@@ -193,7 +197,7 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
   {
     var point = { x: entry.point_handle.offset().left + entry.point_handle.width()/2 - graph.offset().left,
                   y: entry.point_handle.offset().top + entry.point_handle.height()/2 - graph.offset().top };
-    var tangent = { x: entry.tangent_handle.offset().left - entry.tangent_handle.width()/2 - graph.offset().left,
+    var tangent = { x: entry.tangent_handle.offset().left + ((dimension==1 ? -1 : 1) * entry.tangent_handle.width()/2) - graph.offset().left,
                     y: entry.tangent_handle.offset().top + entry.tangent_handle.height()/2 - graph.offset().top };
     if (dimension == 1)
     {
@@ -214,7 +218,8 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
     }
     else if (dimension == 4)
     {
-
+      var point1d = displayToData(point);
+      entry.timestamp = parseFloat(point1d.x);
     }
   }
 
@@ -224,8 +229,8 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
   entry.controls.point.a.val( roundDecimals(entry.point.a, 2) );
   entry.controls.tangent.x.val( roundDecimals(entry.tangent.x, 2) );
   entry.controls.tangent.y.val( roundDecimals(entry.tangent.y, 2) );
-  entry.controls.tangent.z.val( roundDecimals(entry.tangent.a, 2) );
-  entry.controls.tangent.a.val( roundDecimals(entry.tangent.z, 2) );
+  entry.controls.tangent.z.val( roundDecimals(entry.tangent.z, 2) );
+  entry.controls.tangent.a.val( roundDecimals(entry.tangent.a, 2) );
   entry.controls.timestamp.val( Math.trunc(entry.timestamp) );
   refreshPlaybackBounds();
   if (!nested)
@@ -274,7 +279,10 @@ function refreshPointHandle(entry, nested = false)
   }
   else if (dimension == 4)
   {
-    
+    var point1d = dataToDisplay({ x: entry.timestamp, y: 0.5 });
+    entry.point_handle.css({left: graph.offset().left - entry.point_handle.width()/2 + point1d.x,
+                            top: graph.offset().top - entry.point_handle.height()/2 + point1d.y,
+                            position:'absolute'});
   }
   if (!nested)
     refreshPointEntry(entry, true);
@@ -365,7 +373,7 @@ function updatePlayback()
   if (playbackStatus)
   {
     var millsElapsed = Date.now() - simulationStartTime;
-    simulationT = Math.trunc(points.at(0).timestamp + millsElapsed/millsPerTick);
+    simulationT = Math.trunc(/*points.at(0).timestamp +*/ millsElapsed/millsPerTick);
   }
 
   var point;
@@ -378,7 +386,7 @@ function updatePlayback()
   if (simulationT >= points.at(points.length - 1).timestamp)
   {
     moveSimulation(points.at(points.length - 1).point);
-    simulationT = points.at(0).timestamp; // reset loop
+    simulationT = 0;//points.at(0).timestamp; // reset loop
     simulationStartTime = Date.now();
     refreshPlaybackT();
     return;
@@ -417,7 +425,14 @@ function getExportString()
   var string = '[\n';
   for (var i = 0; i < points.length; ++i)
   {
-    string += '  { "timestamp": ' + points[i].timestamp + ', "value": { "x":' + points[i].point.x + ', "y":' + points[i].point.y + ' }, "tangent" : { "x":' + points[i].tangent.x + ', "y":' + points[i].tangent.y + ' }}';
+    string += '  { "timestamp": ' + points[i].timestamp + ', "value": { "x":' + points[i].point.x + ',' +
+                                                                      ' "y":' + points[i].point.y + ',' +
+                                                                      ' "z":' + points[i].point.z + ',' +
+                                                                      ' "a":' + points[i].point.a + ' }, ' +
+                                                          '"tangent" : { "x":' + points[i].tangent.x + ','+
+                                                                       ' "y":' + points[i].tangent.y + ',' +
+                                                                       ' "z":' + points[i].tangent.z + ',' +
+                                                                       ' "a":' + points[i].tangent.a + '}}';
     if (i+1 < points.length)
       string += ',\n';
     else
@@ -476,8 +491,12 @@ function importString()
     var newie = points[points.length - 1];
     newie.point.x = parseFloat(inputTree[i].value.x);
     newie.point.y = parseFloat(inputTree[i].value.y);
+    newie.point.z = parseFloat(inputTree[i].value.z);
+    newie.point.a = parseFloat(inputTree[i].value.a);
     newie.tangent.x = parseFloat(inputTree[i].tangent.x);
     newie.tangent.y = parseFloat(inputTree[i].tangent.y);
+    newie.tangent.z = parseFloat(inputTree[i].tangent.z);
+    newie.tangent.a = parseFloat(inputTree[i].tangent.a);
     newie.timestamp = parseFloat(inputTree[i].timestamp);
     refreshPointEntry(newie, false, true);
   }
@@ -510,8 +529,6 @@ function bezier( A, B, C, D, t )
 
 function paintBezier(ctx,pt1,pt2)
 {
-  if (dimension > 2)
-    return;
 	ctx.beginPath();
 	var delta = 0.05;
 	for (let x = delta; true; x += delta)
@@ -540,12 +557,24 @@ function paintBezier(ctx,pt1,pt2)
       ctx.moveTo(prev.x, prev.y);
       ctx.lineTo(post.x, post.y);
     }
+    else if (dimension == 4)
+    {
+      var t1 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * (x - delta); 
+      var t2 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * x; 
+      var ptprev = dataToDisplay({x: t1, y: 0});
+      var ptpost = dataToDisplay({x: t2, y: 1});
+      ctx.fillStyle = "rgba(" + prev.x + "," + prev.y + "," + prev.z + "," + prev.a + ")";
+      ctx.fillRect(ptprev.x, ptprev.y, ptpost.x - ptprev.x, ptpost.y - ptprev.y);
+    }
 		if (last)
 			break;
 	}
-	ctx.strokeStyle = "#ffaaff";
-	ctx.lineWidth = 2;
-	ctx.stroke();
+  if (dimension < 4)
+  {
+    ctx.strokeStyle = "#ffaaff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
 }
 
 function paintControl(ctx,entry,color)
