@@ -193,7 +193,7 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
   {
     var point = { x: entry.point_handle.offset().left + entry.point_handle.width()/2 - graph.offset().left,
                   y: entry.point_handle.offset().top + entry.point_handle.height()/2 - graph.offset().top };
-    var tangent = { x: entry.tangent_handle.offset().left + entry.tangent_handle.width()/2 - graph.offset().left,
+    var tangent = { x: entry.tangent_handle.offset().left - entry.tangent_handle.width()/2 - graph.offset().left,
                     y: entry.tangent_handle.offset().top + entry.tangent_handle.height()/2 - graph.offset().top };
     if (dimension == 1)
     {
@@ -201,7 +201,7 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
       var tangent1d = displayToData(tangent);
 
       entry.point.x = point1d.y;
-      entry.timestamp = parseInt(point1d.x);
+      entry.timestamp = parseFloat(point1d.x);
       entry.tangent.x = tangent1d.y - entry.point.x;
     }
     else if (dimension == 2)
@@ -226,7 +226,7 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
   entry.controls.tangent.y.val( roundDecimals(entry.tangent.y, 2) );
   entry.controls.tangent.z.val( roundDecimals(entry.tangent.a, 2) );
   entry.controls.tangent.a.val( roundDecimals(entry.tangent.z, 2) );
-  entry.controls.timestamp.val( parseInt(entry.timestamp) );
+  entry.controls.timestamp.val( Math.trunc(entry.timestamp) );
   refreshPlaybackBounds();
   if (!nested)
     refreshPointHandle(entry, true); // propagate rounding back to the handle
@@ -257,7 +257,7 @@ function refreshPointHandle(entry, nested = false)
     entry.point_handle.css({left: graph.offset().left - entry.point_handle.width()/2 + point1d.x,
                             top: graph.offset().top - entry.point_handle.height()/2 + point1d.y,
                             position:'absolute'});
-    entry.tangent_handle.css({left: graph.offset().left - entry.tangent_handle.width()/2 + tangent1d.x,
+    entry.tangent_handle.css({left: graph.offset().left + entry.tangent_handle.width()/2 + tangent1d.x,
                               top: graph.offset().top - entry.tangent_handle.height()/2 + tangent1d.y,
                               position:'absolute'});
   }
@@ -343,7 +343,18 @@ function onTimeTextChanged()
 
 function moveSimulation(point)
 {
-  point = dataToDisplay(point);
+  if (dimension == 1)
+  {
+    point = dataToDisplay({ x: simulationT, y: point.x });
+  }
+  else if (dimension == 2)
+  {
+    point = dataToDisplay(point);
+  }
+  else if (dimension == 4)
+  {
+    point = dataToDisplay({ x: simulationT, y: 0.5 });
+  }
   simulationPoint.css({left: graph.offset().left - simulationPoint.width()/2 + point.x,
                       top: graph.offset().top - simulationPoint.height()/2 + point.y,
                       position:'absolute'});
