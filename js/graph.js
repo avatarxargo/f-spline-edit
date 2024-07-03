@@ -213,7 +213,7 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
       var tangent1d = displayToData(tangent);
 
       entry.point.x = point1d.y;
-      entry.timestamp = parseFloat(point1d.x);
+      entry.timestamp = point1d.x;
       entry.tangent.x = tangent1d.y - entry.point.x;
     }
     else if (dimension == 2)
@@ -227,7 +227,7 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
     else if (dimension == 4)
     {
       var point1d = displayToData(point);
-      entry.timestamp = parseFloat(point1d.x);
+      entry.timestamp = point1d.x;
     }
   }
 
@@ -257,7 +257,8 @@ function refreshPointHandle(entry, nested = false)
   entry.tangent.z = parseFloat(entry.controls.tangent.z.val());
   entry.tangent.a = parseFloat(entry.controls.tangent.a.val());
 
-  entry.timestamp = parseInt(entry.controls.timestamp.val());
+  if (!nested) // to avoid stuttering while dragging time axis
+    entry.timestamp = parseInt(entry.controls.timestamp.val());
   var tangent = { x: entry.point.x + entry.tangent.x,
                   y: entry.point.y + entry.tangent.y,
                   z: entry.point.x + entry.tangent.z,
@@ -437,14 +438,16 @@ function getExportString()
   var string = '[\n';
   for (var i = 0; i < points.length; ++i)
   {
-    string += '  { "timestamp": ' + parseInt(points[i].timestamp) + ', "value": { "x":' + points[i].point.x + ',' +
-                                                                      ' "y":' + points[i].point.y + ',' +
-                                                                      ' "z":' + points[i].point.z + ',' +
-                                                                      ' "a":' + points[i].point.a + ' }, ' +
-                                                          '"tangent" : { "x":' + points[i].tangent.x + ','+
-                                                                       ' "y":' + points[i].tangent.y + ',' +
-                                                                       ' "z":' + points[i].tangent.z + ',' +
-                                                                       ' "a":' + points[i].tangent.a + '}}';
+    string += '  { "timestamp": ' + parseInt(points[i].timestamp) + ', "value": { "x":' + points[i].point.x;
+                                              if (dimension > 1)     string +=  ', "y":' + points[i].point.y;
+                                              if (dimension > 2)  {  string +=  ', "z":' + points[i].point.z +
+                                                                                ', "a":' + points[i].point.a; }
+    string += ' }, '
+    string +=                                                      '"tangent" : { "x":' + points[i].tangent.x;
+                                              if (dimension > 1)     string +=  ', "y":' + points[i].tangent.y;
+                                              if (dimension > 2)  {  string +=  ', "z":' + points[i].tangent.z +
+                                                                                ', "a":' + points[i].tangent.a; }
+    string += ' }}'
     if (i+1 < points.length)
       string += ',\n';
     else
