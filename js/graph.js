@@ -313,7 +313,11 @@ function displayToData(position)
   return { x, y, z, w };
 }
 
-function roundDecimals(value, decimals) { return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals) }
+function roundDecimals(value, decimals)
+{
+  var result = Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+  return Number.isNaN(result) ? 0 : result;
+}
 function getPosX(jqele) { return jqele.offset().left - graph.offset().left + jqele.width()/2; }
 function getPosY(jqele) { return jqele.offset().top - graph.offset().top + jqele.height()/2; }
 function getPoint(jqele) {
@@ -688,22 +692,22 @@ function paintGrid(ctx)
   var xmin = dataArea.x.min < dataArea.x.max ? dataArea.x.min : dataArea.x.max;
   var xmax = dataArea.x.min > dataArea.x.max ? dataArea.x.min : dataArea.x.max;
   var xdelta = 1;
-  if (xmax - xmin >= 30)
-  {
-    paintGridLinesX(ctx, 1, "#555555", xmin, xmax, xdelta);
-    xdelta = 10;
-  }
+  var xinterval = xmax - xmin;
+  while (xinterval/xdelta > 20)
+    xdelta *= 10;
+  if (xdelta >= 10)
+    paintGridLinesX(ctx, 1, "#555555", xmin, xmax, xdelta/10);
   paintGridLinesX(ctx, 1, "white", xmin, xmax, xdelta);
   paintGridLabelX(ctx, "white", "1em Arial", xmin, xmax, xdelta)
 
   var ymin = dataArea.y.min < dataArea.y.max ? dataArea.y.min : dataArea.y.max;
   var ymax = dataArea.y.min > dataArea.y.max ? dataArea.y.min : dataArea.y.max;
   var ydelta = 1;
-  if (ymax - ymin >= 30)
-  {
-    paintGridLinesY(ctx, 1, "#555555", ymin, ymax, ydelta);
-    ydelta = 10;
-  }
+  var yinterval = ymax - ymin;
+  while (yinterval/ydelta > 20)
+    ydelta *= 10;
+  if (ydelta >= 10)
+    paintGridLinesY(ctx, 1, "#555555", ymin, ymax, ydelta/10);
   paintGridLinesY(ctx, 1, "white", ymin, ymax, ydelta);
   paintGridLabelY(ctx, "white", "1em Arial", ymin, ymax, ydelta)
 
