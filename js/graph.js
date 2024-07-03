@@ -550,7 +550,7 @@ function bezier( A, B, C, D, t )
 function paintBezier(ctx,pt1,pt2)
 {
 	ctx.beginPath();
-	var delta = 0.05;
+	var delta = dimension == 4 ? 0.01 : 0.05;
 	for (let x = delta; true; x += delta)
 	{
 		var last = false;
@@ -584,7 +584,7 @@ function paintBezier(ctx,pt1,pt2)
       var ptprev = dataToDisplay({x: t1, y: 0});
       var ptpost = dataToDisplay({x: t2, y: 1});
       ctx.fillStyle = "rgba(" + prev.x + "," + prev.y + "," + prev.z + "," + prev.a + ")";
-      ctx.fillRect(ptprev.x, ptprev.y, ptpost.x - ptprev.x, ptpost.y - ptprev.y);
+      ctx.fillRect(ptprev.x, ptprev.y, ptpost.x - ptprev.x + 1, ptpost.y - ptprev.y);
     }
 		if (last)
 			break;
