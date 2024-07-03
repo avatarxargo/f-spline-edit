@@ -70,7 +70,7 @@ function setDimension()
   applyDimension();
   if (ogDimension != dimension)
   {
-    points.forEach(refreshPointHandle);
+    resizeDataArea();
     paintGraph();
   }
 }
@@ -133,8 +133,8 @@ function addPoint()
   $("#graph-area").append( tangentHandle );
   var controls = addPointControl();
   var entry = { index: points.length,
-                point: { x: points.length, y: 0, z: 0, a: 0 },
-                tangent: { x: 1, y: 1, z: 1, a: 1 },
+                point: { x: points.length, y: 0, z: 0, a: 255 },
+                tangent: { x: 1, y: 1, z: 0, a: 0 },
                 point_handle: pointHandle,
                 tangent_handle: tangentHandle,
                 timestamp: points.length == 0 ? 0 : points.at(points.length-1).timestamp + 100,
@@ -186,8 +186,16 @@ function resizeDataArea()
 {
   dataArea.x.min = parseFloat($( "#x-dimensions input" ).eq(0).val());
   dataArea.x.max = parseFloat($( "#x-dimensions input" ).eq(1).val());
-  dataArea.y.min = parseFloat($( "#y-dimensions input" ).eq(0).val());
-  dataArea.y.max = parseFloat($( "#y-dimensions input" ).eq(1).val());
+  if (dimension < 4)
+  {
+    dataArea.y.min = parseFloat($( "#y-dimensions input" ).eq(0).val());
+    dataArea.y.max = parseFloat($( "#y-dimensions input" ).eq(1).val());
+  }
+  else
+  {
+    dataArea.y.min = 2;
+    dataArea.y.max = -1;
+  }
   points.forEach(refreshPointHandle);
 }
 
@@ -425,7 +433,7 @@ function getExportString()
   var string = '[\n';
   for (var i = 0; i < points.length; ++i)
   {
-    string += '  { "timestamp": ' + points[i].timestamp + ', "value": { "x":' + points[i].point.x + ',' +
+    string += '  { "timestamp": ' + parseInt(points[i].timestamp) + ', "value": { "x":' + points[i].point.x + ',' +
                                                                       ' "y":' + points[i].point.y + ',' +
                                                                       ' "z":' + points[i].point.z + ',' +
                                                                       ' "a":' + points[i].point.a + ' }, ' +
@@ -446,7 +454,7 @@ function getLuaExportString()
   var string = '{\n';
   for (var i = 0; i < points.length; ++i)
   {
-    string += '  { timestamp=' + points[i].timestamp + ', offset = { value = {x=' + points[i].point.x + ', y=' + points[i].point.y + ' }';
+    string += '  { timestamp=' + parseInt(points[i].timestamp) + ', offset = { value = {x=' + points[i].point.x + ', y=' + points[i].point.y + ' }';
     if (points[i].tangent.x != 0 || points[i].tangent.y != 0)
       string += ', tangent = { x=' + points[i].tangent.x + ', y=' + points[i].tangent.y + ' }';
     string += '} }';
@@ -489,15 +497,20 @@ function importString()
   for (var i = 0; i < inputTree.length; i++) {
     addPoint();
     var newie = points[points.length - 1];
-    newie.point.x = parseFloat(inputTree[i].value.x);
-    newie.point.y = parseFloat(inputTree[i].value.y);
-    newie.point.z = parseFloat(inputTree[i].value.z);
-    newie.point.a = parseFloat(inputTree[i].value.a);
-    newie.tangent.x = parseFloat(inputTree[i].tangent.x);
-    newie.tangent.y = parseFloat(inputTree[i].tangent.y);
-    newie.tangent.z = parseFloat(inputTree[i].tangent.z);
-    newie.tangent.a = parseFloat(inputTree[i].tangent.a);
-    newie.timestamp = parseFloat(inputTree[i].timestamp);
+    if (typeof inputTree[i].value !== 'undefined') {
+      if (typeof inputTree[i].value.x !== 'undefined') newie.point.x = parseFloat(inputTree[i].value.x);
+      if (typeof inputTree[i].value.y !== 'undefined') newie.point.y = parseFloat(inputTree[i].value.y);
+      if (typeof inputTree[i].value.z !== 'undefined') newie.point.z = parseFloat(inputTree[i].value.z);
+      if (typeof inputTree[i].value.a !== 'undefined') newie.point.a = parseFloat(inputTree[i].value.a);
+    }
+    if (typeof inputTree[i].tangent !== 'undefined') {
+      if (typeof inputTree[i].tangent.x !== 'undefined') newie.tangent.x = parseFloat(inputTree[i].tangent.x);
+      if (typeof inputTree[i].tangent.y !== 'undefined') newie.tangent.y = parseFloat(inputTree[i].tangent.y);
+      if (typeof inputTree[i].tangent.z !== 'undefined') newie.tangent.z = parseFloat(inputTree[i].tangent.z);
+      if (typeof inputTree[i].tangent.a !== 'undefined') newie.tangent.a = parseFloat(inputTree[i].tangent.a);
+    }
+    if (typeof inputTree[i].timestamp !== 'undefined')
+      newie.timestamp = parseFloat(inputTree[i].timestamp);
     refreshPointEntry(newie, false, true);
   }
 
