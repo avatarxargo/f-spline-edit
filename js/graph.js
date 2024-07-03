@@ -44,6 +44,7 @@ $( document ).ready(function() {
   $("#time-slider").on("mousedown", function() { togglePlayback(false); });
   $("#time-text").on("mousedown", function() { togglePlayback(false); });
   
+  $("#fit").click( function() { fitBoundsToData(); });
   $("#button-add").click( function() { addPoint(); paintGraph(); });
   $("#export-lua").click( function() { exportLua(); });
   $("#download").click( function() { downloadString(); });
@@ -197,6 +198,62 @@ function resizeDataArea()
     dataArea.y.max = -1;
   }
   points.forEach(refreshPointHandle);
+}
+function fitBoundsToData()
+{
+  var minx = 10000000.0;
+  var miny = 10000000.0;
+  var maxx = -10000000.0;
+  var maxy = -10000000.0;
+
+  if (dimension == 1)
+    for (var i = 0; i < points.length; ++i)
+    {
+      var x1 = points[i].timestamp;
+      var y1 = points[i].point.x;
+      var y2 = y1 + points[i].tangent.x;
+      if (minx > x1) minx = x1;
+      if (maxx < x1) maxx = x1;
+      if (miny > y1) miny = y1;
+      if (maxy < y1) maxy = y1;
+      if (miny > y2) miny = y2;
+      if (maxy < y2) maxy = y2;
+    }
+  else if (dimension == 2)
+    for (var i = 0; i < points.length; ++i)
+    {
+      var x1 = points[i].point.x;
+      var x2 = x1 + points[i].tangent.x;
+      var y1 = points[i].point.y;
+      var y2 = y1 + points[i].tangent.y;
+      if (minx > x1) minx = x1;
+      if (maxx < x1) maxx = x1;
+      if (minx > x2) minx = x2;
+      if (maxx < x2) maxx = x2;
+      if (miny > y1) miny = y1;
+      if (maxy < y1) maxy = y1;
+      if (miny > y2) miny = y2;
+      if (maxy < y2) maxy = y2;
+    }
+  else if (dimension == 4)
+    for (var i = 0; i < points.length; ++i)
+    {
+      var x1 = points[i].timestamp;
+      if (minx > x1) minx = x1;
+      if (maxx < x1) maxx = x1;
+    }
+  else
+    return;
+
+  $( "#x-dimensions input" ).eq(0).val(roundDecimals(minx - 1, 0));
+  $( "#x-dimensions input" ).eq(1).val(roundDecimals(maxx + 1, 0));
+  if (dimension != 4)
+  {
+    $( "#y-dimensions input" ).eq(0).val(roundDecimals(maxy + 1, 0)); // y swapped to put positive axis upward
+    $( "#y-dimensions input" ).eq(1).val(roundDecimals(miny - 1, 0));
+  }
+  resizeDataArea();
+  paintGraph();
 }
 
 function refreshPointEntry(entry, nested = false, dataOnly = false)
@@ -584,7 +641,9 @@ function paintBezier(ctx,pt1,pt2)
       var ptprev = dataToDisplay({x: t1, y: 0});
       var ptpost = dataToDisplay({x: t2, y: 1});
       ctx.fillStyle = "rgba(" + prev.x + "," + prev.y + "," + prev.z + "," + prev.a + ")";
+      ctx.globalAlpha = (prev.a / 255.0);
       ctx.fillRect(ptprev.x, ptprev.y, ptpost.x - ptprev.x + 1, ptpost.y - ptprev.y);
+      ctx.globalAlpha = 1.0;
     }
 		if (last)
 			break;
@@ -689,8 +748,23 @@ function paintGridLabelY(ctx, color, style, ymin, ymax, ydelta)
 
 function paintGrid(ctx)
 {
-  ctx.fillStyle = "black";
-	ctx.fillRect(0, 0, 800, 800);
+  if (dimension != 4)
+  {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, 800, 800);
+  }
+  else
+  {
+    ctx.fillStyle = "#333333";
+    ctx.fillRect(0, 0, 800, 800);
+    ctx.fillStyle = "#888888";
+    var size = 20;
+    var row = 800/size;
+    var col = 800/size;
+    for (var i = 0; i < row; ++i)
+      for (var j = i%2; j < col; j += 2)
+        ctx.fillRect(j * size, i * size, size, size);
+  }
 
   var xmin = dataArea.x.min < dataArea.x.max ? dataArea.x.min : dataArea.x.max;
   var xmax = dataArea.x.min > dataArea.x.max ? dataArea.x.min : dataArea.x.max;
