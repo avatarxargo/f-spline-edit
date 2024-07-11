@@ -43,9 +43,9 @@
                     <option value="2D">Vector (2D)</option>
                     <option value="4D">Color (4D)</option>
                   </select>
-                  <a id="flipx" class="button square-button" style="display: inline-block; margin-left: 6.3em;"><div>&#11020;</div></a>
-                  <a id="flipy" class="button square-button" style="display: inline-block;"><div>&#11021;</div></a>
-                  <a id="fit" class="button" style="display: inline-block;"><div>Fit data</div></a>
+                  <a id="flipx" title="Flip horizontal axis" class="button square-button" style="display: inline-block; margin-left: 6.3em;"><div>&#11020;</div></a>
+                  <a id="flipy" title="Flip vertical axis" class="button square-button" style="display: inline-block;"><div>&#11021;</div></a>
+                  <a id="fit" title="Resize the bounds to encompas all handles" class="button" style="display: inline-block;"><div>Fit data</div></a>
                   <div id="x-dimensions">
                     <b>X:</b>
                     <label>min:</label> <input type="text" value="-10.0" inputmode="numeric" pattern="[0-9]*">
@@ -71,7 +71,7 @@
                   <b>Timeline:</b><br/>
                   <i>(Values shown in ticks. 1 tick = 16ms during 60fps)</i><br/>
                   <label>current time:</label> <input id="time-text" type="text" value="0" inputmode="numeric" pattern="[0-9]*">
-                  <a id="button-play" class="button square-button"><div>?</div></a> 
+                  <a id="button-play" title="Play/Pause preview animation. The animation plays at the same speed it would in game." class="button square-button"><div>?</div></a> 
                   <br/>
                   <div style="width: 100%">
                     <input id="time-slider" class="slider panel-inset-lighter" type="range" min="0" max="100" value="0">

@@ -43,7 +43,7 @@ $( document ).ready(function() {
   $("#time-text").on("change", function() { if(playbackStatus) return; onTimeTextChanged(); });
   $("#time-slider").on("mousedown", function() { togglePlayback(false); });
   $("#time-text").on("mousedown", function() { togglePlayback(false); });
-  
+
   $("#fit").click( function() { fitBoundsToData(); });
   $("#flipx").click( function() { flipBoundsX(); });
   $("#flipy").click( function() { flipBoundsY(); });
@@ -80,25 +80,27 @@ function setDimension()
 function applyDimension()
 {
   if (dimension >= 2)
-    $(".2d").show()
+    $(".2d").show();
   else
-    $(".2d").hide()
+    $(".2d").hide();
 
   if (dimension >= 4)
   {
-    $(".4d").show()
-    $(".n4d").hide()
+    $(".4d").show();
+    $(".n4d").hide();
+    $("#flipy").addClass('disabled-button');
   }
   else
   {
-    $(".4d").hide()
-    $(".n4d").show()
+    $(".4d").hide();
+    $(".n4d").show();
+    $("#flipy").removeClass('disabled-button');
   }
 }
 
 function addPointControl()
 {
-  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button">X</a> point ' +
+  var newPanel = $( '<div class="panel narrow-field"> <p><a class="button micro-button" title="Remove point (cannot be undone)">X</a> point ' +
                     '<label>x:</label> <input type="text" inputmode="numeric" pattern="[0-9]*">'+
                     '<label class="2d">y:</label> <input class="2d" type="text" inputmode="numeric" pattern="[0-9]*">'+
                     '<br/ class="4d"><label class="4d">z:</label> <input class="4d" type="text" inputmode="numeric" pattern="[0-9]*">'+
@@ -211,6 +213,8 @@ function flipBoundsX()
 }
 function flipBoundsY()
 {
+  if (dimension >= 4)
+    return;
   var tmp = $( "#y-dimensions input" ).eq(0).val();
   $( "#y-dimensions input" ).eq(0).val($( "#y-dimensions input" ).eq(1).val());
   $( "#y-dimensions input" ).eq(1).val(tmp);

@@ -122,3 +122,9 @@ div.narrow-field:nth-of-type(4n + 4) {	background-color: #0c2715 }
   background: #E39827;
   cursor: pointer;
 }
+
+a.disabled-button
+{
+  background-color: #3d3535;
+  pointer-events: none;
+}
