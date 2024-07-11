@@ -466,7 +466,7 @@ function updatePlayback()
     refreshPlaybackT();
     return;
   }
-    
+
   var i = 1;
   while (simulationT > points.at(i).timestamp && (i+1) < points.length)
     ++i;
@@ -518,10 +518,26 @@ function getLuaExportString()
   var string = '{\n';
   for (var i = 0; i < points.length; ++i)
   {
-    string += '  { timestamp=' + parseInt(points[i].timestamp) + ', offset = { value = {x=' + points[i].point.x + ', y=' + points[i].point.y + ' }';
-    if (points[i].tangent.x != 0 || points[i].tangent.y != 0)
-      string += ', tangent = { x=' + points[i].tangent.x + ', y=' + points[i].tangent.y + ' }';
-    string += '} }';
+    if (dimension == 1)
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = ' + points[i].point.x + " ";
+    if (dimension == 2)
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = {' + points[i].point.x + ', ' + points[i].point.y + '}';
+    if (dimension > 2)
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = { r=' + points[i].point.x + ', g=' + points[i].point.y + ', b=' + points[i].point.z + ', a=' + points[i].point.a + '}';
+
+    if (points[i].tangent.x != 0 ||
+        (dimension > 1 && points[i].tangent.y != 0) ||
+        (dimension > 2 && points[i].tangent.z != 0) ||
+        (dimension > 2 && points[i].tangent.a != 0))
+    {
+      if (dimension == 1)
+        string += ', value_t = ' + points[i].tangent.x + " ";
+      if (dimension == 2)
+        string += ', value_t = {' + points[i].tangent.x + ', ' + points[i].tangent.y + '}';
+      if (dimension > 2)
+        string += ', value_t = { r=' + points[i].tangent.x + ', g=' + points[i].tangent.y + ', b=' + points[i].tangent.z + ', a=' + points[i].tangent.a + '}';
+    }
+    string += ' }';
     if (i+1 < points.length)
       string += ',\n';
     else
@@ -532,7 +548,7 @@ function getLuaExportString()
 }
 
 function downloadString() {
-  
+
   const a = document.createElement('a') // Create "a" element
   const blob = new Blob([getExportString()], {type: "text/plain"}) // Create a blob (file-like object)
   const url = URL.createObjectURL(blob) // Create an object URL from blob
