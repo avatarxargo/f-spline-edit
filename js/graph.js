@@ -45,6 +45,8 @@ $( document ).ready(function() {
   $("#time-text").on("mousedown", function() { togglePlayback(false); });
   
   $("#fit").click( function() { fitBoundsToData(); });
+  $("#flipx").click( function() { flipBoundsX(); });
+  $("#flipy").click( function() { flipBoundsY(); });
   $("#button-add").click( function() { addPoint(); paintGraph(); });
   $("#export-lua").click( function() { exportLua(); });
   $("#download").click( function() { downloadString(); });
@@ -198,6 +200,22 @@ function resizeDataArea()
     dataArea.y.max = -1;
   }
   points.forEach(refreshPointHandle);
+}
+function flipBoundsX()
+{
+  var tmp = $( "#x-dimensions input" ).eq(0).val();
+  $( "#x-dimensions input" ).eq(0).val($( "#x-dimensions input" ).eq(1).val());
+  $( "#x-dimensions input" ).eq(1).val(tmp);
+  resizeDataArea();
+  paintGraph();
+}
+function flipBoundsY()
+{
+  var tmp = $( "#y-dimensions input" ).eq(0).val();
+  $( "#y-dimensions input" ).eq(0).val($( "#y-dimensions input" ).eq(1).val());
+  $( "#y-dimensions input" ).eq(1).val(tmp);
+  resizeDataArea();
+  paintGraph();
 }
 function fitBoundsToData()
 {
