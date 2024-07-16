@@ -553,7 +553,8 @@ function getLuaExportString()
         (dimension > 2 && points[i].tangent.a != 0))
     {
       if (dimension == 1)
-        string += ', value_t = ' + points[i].tangent.x + " ";
+        {}
+        //string += ', value_t = ' + points[i].tangent.x + " ";
       if (dimension == 2)
         string += ', value_t = {' + points[i].tangent.x + ', ' + points[i].tangent.y + '}';
       if (dimension > 2)
