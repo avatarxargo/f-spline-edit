@@ -622,6 +622,12 @@ function importString()
 
 function bezier( A, B, C, D, t )
 {
+  if (dimension == 1)
+    return {x: C.x * t + A.x * (1 - t),
+            y: C.y * t + A.y * (1 - t),
+            z: C.z * t + A.z * (1 - t),
+            a: C.a * t + A.a * (1 - t)};
+
 	var mt = 1 - t;
   var projB = {};
   var projD = {};
@@ -658,8 +664,8 @@ function paintBezier(ctx,pt1,pt2)
 		var post = bezier(pt1.point,pt1.tangent,pt2.point,pt2.tangent,x);
     if (dimension == 1)
     {
-      var t1 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * (x - delta); 
-      var t2 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * x; 
+      var t1 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * (x - delta);
+      var t2 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * x;
       prev = dataToDisplay({x: t1, y: prev.x});
       post = dataToDisplay({x: t2, y: post.x});
       ctx.moveTo(prev.x, prev.y);
@@ -674,8 +680,8 @@ function paintBezier(ctx,pt1,pt2)
     }
     else if (dimension == 4)
     {
-      var t1 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * (x - delta); 
-      var t2 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * x; 
+      var t1 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * (x - delta);
+      var t2 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * x;
       var ptprev = dataToDisplay({x: t1, y: 0});
       var ptpost = dataToDisplay({x: t2, y: 1});
       ctx.fillStyle = "rgba(" + prev.x + "," + prev.y + "," + prev.z + "," + prev.a + ")";
