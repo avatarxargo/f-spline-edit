@@ -621,15 +621,22 @@ function importString()
     addPoint();
 }
 
+function bezier1D(A, At, B, Bt, C, Ct, t)
+{
+  return {x: ((A.x + B.x) * 0.5) * (1-t) + ((B.x + C.x) * 0.5) * t};
+}
+
 function bezier( A, B, C, D, t )
 {
-  if (dimension == 1)
-    return {x: C.x * t + A.x * (1 - t),
-            y: C.y * t + A.y * (1 - t),
-            z: C.z * t + A.z * (1 - t),
-            a: C.a * t + A.a * (1 - t)};
-
 	var mt = 1 - t;
+  if (dimension == 1)
+  {
+    return {x: A.x * mt + B.x * mt*mt + C.x * t + D.x *t*t,
+            y: A.y * mt + B.y * mt*mt + C.y * t + D.y *t*t,
+            z: A.z * mt + B.z * mt*mt + C.z * t + D.z *t*t,
+            a: A.a * mt + B.a * mt*mt + C.a * t + D.a *t*t};
+  }
+
   var projB = {};
   var projD = {};
   projB.x = A.x + B.x;
@@ -648,6 +655,36 @@ function bezier( A, B, C, D, t )
 	var a = A.a * mt * mt * mt + projB.a * 3 * mt * mt * t + projD.a * 3 * mt * t * t + C.a * t * t * t;
 	return {x, y, z, a};
 }
+
+// function paintBezier1D(ctx, pt1, pt2, pt3)
+// {
+// 	ctx.beginPath();
+// 	var delta = dimension == 4 ? 0.01 : 0.05;
+//   for (let x = delta; true; x += delta)
+//   {
+//     var last = false;
+// 		if (x > 1)
+// 		{
+// 			last = true;
+// 			x = 1;
+// 		}
+// 		var prev = bezier1D(pt1.point,pt1.tangent,pt2.point,pt2.tangent,pt3.point,pt3.tangent,x - delta);
+// 		var post = bezier1D(pt1.point,pt1.tangent,pt2.point,pt2.tangent,pt3.point,pt3.tangent,x);
+//     var mid12time = 0.5*(pt1.timestamp + pt2.timestamp);
+//     var mid23time = 0.5*(pt2.timestamp + pt3.timestamp);
+//     var t1 = mid12time + (mid23time - mid12time) * (x - delta);
+//     var t2 = mid12time + (mid23time - mid12time) * x;
+//     prev = dataToDisplay({x: t1, y: prev.x});
+//     post = dataToDisplay({x: t2, y: post.x});
+//     ctx.moveTo(prev.x, prev.y);
+//     ctx.lineTo(post.x, post.y);
+// 		if (last)
+// 			break;
+//   }
+//   ctx.strokeStyle = "#ffaaff";
+//   ctx.lineWidth = 2;
+//   ctx.stroke();
+// }
 
 function paintBezier(ctx,pt1,pt2)
 {
