@@ -688,6 +688,7 @@ function bezier( A, B, C, D, t )
 
 function paintBezier(ctx,pt1,pt2)
 {
+  var descendingD1 = [];
 	ctx.beginPath();
 	var delta = dimension == 4 ? 0.01 : 0.05;
 	for (let x = delta; true; x += delta)
@@ -704,6 +705,8 @@ function paintBezier(ctx,pt1,pt2)
     {
       var t1 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * (x - delta);
       var t2 = pt1.timestamp + (pt2.timestamp-pt1.timestamp) * x;
+      if (prev.x > post.x)
+        descendingD1.push(dataToDisplay({x: t1, y: prev.x}), dataToDisplay({x: t2, y: post.x}));
       prev = dataToDisplay({x: t1, y: prev.x});
       post = dataToDisplay({x: t2, y: post.x});
       ctx.moveTo(prev.x, prev.y);
@@ -733,6 +736,18 @@ function paintBezier(ctx,pt1,pt2)
   if (dimension < 4)
   {
     ctx.strokeStyle = "#ffaaff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  if (descendingD1.length > 0)
+  {
+    ctx.beginPath();
+    for (var i = 1; i < descendingD1.length; i+=2)
+    {
+      ctx.moveTo(descendingD1[i-1].x, descendingD1[i-1].y);
+      ctx.lineTo(descendingD1[i].x, descendingD1[i].y);
+    }
+    ctx.strokeStyle = "#ff5555";
     ctx.lineWidth = 2;
     ctx.stroke();
   }
