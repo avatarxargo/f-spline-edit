@@ -309,6 +309,8 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
       entry.timestamp = point1d.x;
     }
   }
+  if (nested)
+    return;
 
   entry.controls.point.x.val( roundDecimals(entry.point.x, 2) );
   entry.controls.point.y.val( roundDecimals(entry.point.y, 2) );
@@ -320,21 +322,33 @@ function refreshPointEntry(entry, nested = false, dataOnly = false)
   entry.controls.tangent.a.val( roundDecimals(entry.tangent.a, 2) );
   entry.controls.timestamp.val( Math.trunc(entry.timestamp) );
   refreshPlaybackBounds();
-  if (!nested)
-    refreshPointHandle(entry, true); // propagate rounding back to the handle
+  refreshPointHandle(entry, true); // propagate rounding back to the handle
 }
 
 function refreshPointHandle(entry, nested = false)
 {
-  entry.point.x = parseFloat(entry.controls.point.x.val());
-  entry.point.y = parseFloat(entry.controls.point.y.val());
-  entry.point.z = parseFloat(entry.controls.point.z.val());
-  entry.point.a = parseFloat(entry.controls.point.a.val());
+  var tmpx = parseFloat(entry.controls.point.x.val());
+  var tmpy = parseFloat(entry.controls.point.y.val());
+  var tmpz = parseFloat(entry.controls.point.z.val());
+  var tmpa = parseFloat(entry.controls.point.a.val());
 
-  entry.tangent.x = parseFloat(entry.controls.tangent.x.val());
-  entry.tangent.y = parseFloat(entry.controls.tangent.y.val());
-  entry.tangent.z = parseFloat(entry.controls.tangent.z.val());
-  entry.tangent.a = parseFloat(entry.controls.tangent.a.val());
+  var tmtx = parseFloat(entry.controls.tangent.x.val());
+  var tmty = parseFloat(entry.controls.tangent.y.val());
+  var tmtz = parseFloat(entry.controls.tangent.z.val());
+  var tmta = parseFloat(entry.controls.tangent.a.val());
+
+  if (isNaN(tmpx) || isNaN(tmpy) || isNaN(tmpz) || isNaN(tmpa) || isNaN(tmtx) || isNaN(tmty) || isNaN(tmtz) || isNaN(tmta))
+    return;
+
+  entry.point.x = tmpx;
+  entry.point.y = tmpy;
+  entry.point.z = tmpz;
+  entry.point.a = tmpa;
+
+  entry.tangent.x = tmtx;
+  entry.tangent.y = tmty;
+  entry.tangent.z = tmtz;
+  entry.tangent.a = tmta;
 
   if (!nested) // to avoid stuttering while dragging time axis
     entry.timestamp = parseInt(entry.controls.timestamp.val());
