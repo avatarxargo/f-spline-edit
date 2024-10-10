@@ -528,15 +528,17 @@ function refreshPlaybackBounds()
 
 function getExportString()
 {
+  var keyword = $("#export-name").val();
+  
   var string = '[\n';
   for (var i = 0; i < points.length; ++i)
   {
-    string += '  { "timestamp": ' + parseInt(points[i].timestamp) + ', "value": { "x":' + roundDecimals(points[i].point.x, 3);
+    string += '  { "timestamp": ' + parseInt(points[i].timestamp) + ', "'+ keyword +'": { "x":' + roundDecimals(points[i].point.x, 3);
                                               if (dimension > 1)     string +=  ', "y":' + roundDecimals(points[i].point.y, 3);
                                               if (dimension > 2)  {  string +=  ', "z":' + roundDecimals(points[i].point.z, 3) +
                                                                                 ', "a":' + roundDecimals(points[i].point.a, 3); }
     string += ' }, '
-    string +=                                                      '"tangent" : { "x":' + roundDecimals(points[i].tangent.x, 3);
+    string +=                                                      '"'+ keyword +'_t" : { "x":' + roundDecimals(points[i].tangent.x, 3);
                                               if (dimension > 1)     string +=  ', "y":' + roundDecimals(points[i].tangent.y, 3);
                                               if (dimension > 2)  {  string +=  ', "z":' + roundDecimals(points[i].tangent.z, 3) +
                                                                                 ', "a":' + roundDecimals(points[i].tangent.a, 3); }
@@ -551,15 +553,17 @@ function getExportString()
 }
 function getLuaExportString()
 {
+  var keyword = $("#export-name").val();
+
   var string = '{\n';
   for (var i = 0; i < points.length; ++i)
   {
     if (dimension == 1)
-      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = ' + roundDecimals(points[i].point.x, 3) + " ";
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', '+ keyword +' = ' + roundDecimals(points[i].point.x, 3) + " ";
     if (dimension == 2)
-      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = {' + roundDecimals(points[i].point.x, 3) + ', ' + roundDecimals(points[i].point.y, 3) + '}';
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', '+ keyword +' = {' + roundDecimals(points[i].point.x, 3) + ', ' + roundDecimals(points[i].point.y, 3) + '}';
     if (dimension > 2)
-      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = { r=' + roundDecimals(points[i].point.x, 3) + ', g=' + roundDecimals(points[i].point.y, 3)+ ', b=' + roundDecimals(points[i].point.z, 3) + ', a=' + roundDecimals(points[i].point.a, 3) + '}';
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', '+ keyword +' = { r=' + roundDecimals(points[i].point.x, 3) + ', g=' + roundDecimals(points[i].point.y, 3)+ ', b=' + roundDecimals(points[i].point.z, 3) + ', a=' + roundDecimals(points[i].point.a, 3) + '}';
 
     if (points[i].tangent.x != 0 ||
         (dimension > 1 && points[i].tangent.y != 0) ||
@@ -570,9 +574,9 @@ function getLuaExportString()
         {}
         //string += ', value_t = ' + points[i].tangent.x + " ";
       if (dimension == 2)
-        string += ', value_t = {' + roundDecimals(points[i].tangent.x, 3) + ', ' + roundDecimals(points[i].tangent.y, 3) + '}';
+        string += ', '+ keyword +'_t = {' + roundDecimals(points[i].tangent.x, 3) + ', ' + roundDecimals(points[i].tangent.y, 3) + '}';
       if (dimension > 2)
-        string += ', value_t = { r=' + roundDecimals(points[i].tangent.x, 3) + ', g=' + roundDecimals(points[i].tangent.y, 3) + ', b=' + roundDecimals(points[i].tangent.z, 3) + ', a=' + roundDecimals(points[i].tangent.a, 3) + '}';
+        string += ', '+ keyword +'_t = { r=' + roundDecimals(points[i].tangent.x, 3) + ', g=' + roundDecimals(points[i].tangent.y, 3) + ', b=' + roundDecimals(points[i].tangent.z, 3) + ', a=' + roundDecimals(points[i].tangent.a, 3) + '}';
     }
     string += ' }';
     if (i+1 < points.length)
@@ -608,23 +612,28 @@ function exportLua()
 function importString()
 {
   clearPoints();
+  var keyword = $("#export-name").val();
+  var keywordTan = keyword + "_t";
+
+  console.log(keyword)
+  console.log(keywordTan)
 
   var string = $("#iostring").val();
   var inputTree = jQuery.parseJSON(string);
   for (var i = 0; i < inputTree.length; i++) {
     addPoint();
     var newie = points[points.length - 1];
-    if (typeof inputTree[i].value !== 'undefined') {
-      if (typeof inputTree[i].value.x !== 'undefined') newie.point.x = parseFloat(inputTree[i].value.x);
-      if (typeof inputTree[i].value.y !== 'undefined') newie.point.y = parseFloat(inputTree[i].value.y);
-      if (typeof inputTree[i].value.z !== 'undefined') newie.point.z = parseFloat(inputTree[i].value.z);
-      if (typeof inputTree[i].value.a !== 'undefined') newie.point.a = parseFloat(inputTree[i].value.a);
+    if (typeof inputTree[i][keyword] !== 'undefined') {
+      if (typeof inputTree[i][keyword].x !== 'undefined') newie.point.x = parseFloat(inputTree[i][keyword].x);
+      if (typeof inputTree[i][keyword].y !== 'undefined') newie.point.y = parseFloat(inputTree[i][keyword].y);
+      if (typeof inputTree[i][keyword].z !== 'undefined') newie.point.z = parseFloat(inputTree[i][keyword].z);
+      if (typeof inputTree[i][keyword].a !== 'undefined') newie.point.a = parseFloat(inputTree[i][keyword].a);
     }
-    if (typeof inputTree[i].tangent !== 'undefined') {
-      if (typeof inputTree[i].tangent.x !== 'undefined') newie.tangent.x = parseFloat(inputTree[i].tangent.x);
-      if (typeof inputTree[i].tangent.y !== 'undefined') newie.tangent.y = parseFloat(inputTree[i].tangent.y);
-      if (typeof inputTree[i].tangent.z !== 'undefined') newie.tangent.z = parseFloat(inputTree[i].tangent.z);
-      if (typeof inputTree[i].tangent.a !== 'undefined') newie.tangent.a = parseFloat(inputTree[i].tangent.a);
+    if (typeof inputTree[i][keywordTan] !== 'undefined') {
+      if (typeof inputTree[i][keywordTan].x !== 'undefined') newie.tangent.x = parseFloat(inputTree[i][keywordTan].x);
+      if (typeof inputTree[i][keywordTan].y !== 'undefined') newie.tangent.y = parseFloat(inputTree[i][keywordTan].y);
+      if (typeof inputTree[i][keywordTan].z !== 'undefined') newie.tangent.z = parseFloat(inputTree[i][keywordTan].z);
+      if (typeof inputTree[i][keywordTan].a !== 'undefined') newie.tangent.a = parseFloat(inputTree[i][keywordTan].a);
     }
     if (typeof inputTree[i].timestamp !== 'undefined')
       newie.timestamp = parseFloat(inputTree[i].timestamp);
