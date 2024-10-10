@@ -529,7 +529,7 @@ function refreshPlaybackBounds()
 function getExportString()
 {
   var keyword = $("#export-name").val();
-  
+
   var string = '[\n';
   for (var i = 0; i < points.length; ++i)
   {
@@ -614,9 +614,6 @@ function importString()
   clearPoints();
   var keyword = $("#export-name").val();
   var keywordTan = keyword + "_t";
-
-  console.log(keyword)
-  console.log(keywordTan)
 
   var string = $("#iostring").val();
   var inputTree = jQuery.parseJSON(string);
