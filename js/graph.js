@@ -531,15 +531,15 @@ function getExportString()
   var string = '[\n';
   for (var i = 0; i < points.length; ++i)
   {
-    string += '  { "timestamp": ' + parseInt(points[i].timestamp) + ', "value": { "x":' + points[i].point.x;
-                                              if (dimension > 1)     string +=  ', "y":' + points[i].point.y;
-                                              if (dimension > 2)  {  string +=  ', "z":' + points[i].point.z +
-                                                                                ', "a":' + points[i].point.a; }
+    string += '  { "timestamp": ' + parseInt(points[i].timestamp) + ', "value": { "x":' + roundDecimals(points[i].point.x, 3);
+                                              if (dimension > 1)     string +=  ', "y":' + roundDecimals(points[i].point.y, 3);
+                                              if (dimension > 2)  {  string +=  ', "z":' + roundDecimals(points[i].point.z, 3) +
+                                                                                ', "a":' + roundDecimals(points[i].point.a, 3); }
     string += ' }, '
-    string +=                                                      '"tangent" : { "x":' + points[i].tangent.x;
-                                              if (dimension > 1)     string +=  ', "y":' + points[i].tangent.y;
-                                              if (dimension > 2)  {  string +=  ', "z":' + points[i].tangent.z +
-                                                                                ', "a":' + points[i].tangent.a; }
+    string +=                                                      '"tangent" : { "x":' + roundDecimals(points[i].tangent.x, 3);
+                                              if (dimension > 1)     string +=  ', "y":' + roundDecimals(points[i].tangent.y, 3);
+                                              if (dimension > 2)  {  string +=  ', "z":' + roundDecimals(points[i].tangent.z, 3) +
+                                                                                ', "a":' + roundDecimals(points[i].tangent.a, 3); }
     string += ' }}'
     if (i+1 < points.length)
       string += ',\n';
@@ -555,11 +555,11 @@ function getLuaExportString()
   for (var i = 0; i < points.length; ++i)
   {
     if (dimension == 1)
-      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = ' + points[i].point.x + " ";
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = ' + roundDecimals(points[i].point.x, 3) + " ";
     if (dimension == 2)
-      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = {' + points[i].point.x + ', ' + points[i].point.y + '}';
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = {' + roundDecimals(points[i].point.x, 3) + ', ' + roundDecimals(points[i].point.y, 3) + '}';
     if (dimension > 2)
-      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = { r=' + points[i].point.x + ', g=' + points[i].point.y + ', b=' + points[i].point.z + ', a=' + points[i].point.a + '}';
+      string += '  { timestamp=' + parseInt(points[i].timestamp) + ', value = { r=' + roundDecimals(points[i].point.x, 3) + ', g=' + roundDecimals(points[i].point.y, 3)+ ', b=' + roundDecimals(points[i].point.z, 3) + ', a=' + roundDecimals(points[i].point.a, 3) + '}';
 
     if (points[i].tangent.x != 0 ||
         (dimension > 1 && points[i].tangent.y != 0) ||
@@ -570,9 +570,9 @@ function getLuaExportString()
         {}
         //string += ', value_t = ' + points[i].tangent.x + " ";
       if (dimension == 2)
-        string += ', value_t = {' + points[i].tangent.x + ', ' + points[i].tangent.y + '}';
+        string += ', value_t = {' + roundDecimals(points[i].tangent.x, 3) + ', ' + roundDecimals(points[i].tangent.y, 3) + '}';
       if (dimension > 2)
-        string += ', value_t = { r=' + points[i].tangent.x + ', g=' + points[i].tangent.y + ', b=' + points[i].tangent.z + ', a=' + points[i].tangent.a + '}';
+        string += ', value_t = { r=' + roundDecimals(points[i].tangent.x, 3) + ', g=' + roundDecimals(points[i].tangent.y, 3) + ', b=' + roundDecimals(points[i].tangent.z, 3) + ', a=' + roundDecimals(points[i].tangent.a, 3) + '}';
     }
     string += ' }';
     if (i+1 < points.length)
